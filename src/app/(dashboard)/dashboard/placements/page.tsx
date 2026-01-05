@@ -1,268 +1,156 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Building2, ArrowRight, CheckCircle2, Clock, XCircle, Loader2 } from "lucide-react";
-
-interface Application {
-  id: string;
-  company: string;
-  status: string;
-  currentStage: string | null;
-  finalTrack: string | null;
-  finalDecision: string | null;
-  createdAt: string;
-}
+import { ApplicationsTable } from "@/components/placements/applications-table";
+import { PlacementFilters } from "@/components/placements/placement-filters";
+import { ProUpgradeCard } from "@/components/dashboard/pro-upgrade-card";
+import { ChevronRight, LayoutDashboard, Briefcase, TrendingUp, Clock, Award, Sparkles } from "lucide-react";
+import Link from "next/link";
+import { motion } from "framer-motion";
 
 export default function PlacementsPage() {
-  const router = useRouter();
-  const [applications, setApplications] = useState<Application[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchApplications();
-  }, []);
-
-  const fetchApplications = async () => {
-    try {
-      const response = await fetch("/api/placements/my-applications");
-      if (response.ok) {
-        const data = await response.json();
-        setApplications(data);
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
       }
-    } catch (error) {
-      console.error("Error fetching applications:", error);
-    } finally {
-      setLoading(false);
     }
   };
 
-  const handleApply = async (company: string) => {
-    try {
-      const response = await fetch("/api/placements/apply", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ company }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        router.push(`/dashboard/placements/${data.id}/eligibility`);
-      } else {
-        const error = await response.json();
-        alert(error.error || "Failed to start application");
-      }
-    } catch (error) {
-      console.error("Error starting application:", error);
-      alert("Failed to start application");
-    }
+  const item = {
+    hidden: { y: 20, opacity: 0 },
+    show: { y: 0, opacity: 1 }
   };
-
-  const getStatusBadge = (status: string) => {
-    const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-      eligibility_check: { label: "Eligibility Check", variant: "secondary" },
-      foundation: { label: "Foundation Test", variant: "default" },
-      advanced: { label: "Advanced Test", variant: "default" },
-      coding: { label: "Coding Test", variant: "default" },
-      aptitude: { label: "Aptitude Test", variant: "default" },
-      essay: { label: "Essay Writing", variant: "default" },
-      voice: { label: "Voice Assessment", variant: "default" },
-      interview: { label: "Interview", variant: "default" },
-      completed: { label: "Completed", variant: "default" },
-      rejected: { label: "Rejected", variant: "destructive" },
-      withdrawn: { label: "Withdrawn", variant: "outline" },
-    };
-
-    const config = statusConfig[status] || { label: status, variant: "secondary" };
-    return <Badge variant={config.variant}>{config.label}</Badge>;
-  };
-
-  const companies = [
-    {
-      name: "TCS",
-      fullName: "Tata Consultancy Services",
-      description: "India's largest IT services company with global presence",
-      process: [
-        "Eligibility Check",
-        "Foundation Test (75 mins)",
-        "Advanced Test (115 mins)",
-        "Track Assignment (Digital/Ninja)",
-        "Interview",
-      ],
-      eligibility: [
-        "≥60% in 10th, 12th & Graduation",
-        "≤1 Active Backlog",
-        "≤24 months gap",
-      ],
-      color: "from-blue-500 to-blue-600",
-    },
-    {
-      name: "Wipro",
-      fullName: "Wipro Limited",
-      description: "Leading global information technology company",
-      process: [
-        "Eligibility Check",
-        "Aptitude Test (48 mins)",
-        "Essay Writing (20 mins)",
-        "Coding Test (60 mins)",
-        "Voice Assessment",
-        "Track Assignment (Turbo/Elite)",
-        "Interview",
-      ],
-      eligibility: [
-        "≥60% in 10th, 12th & Graduation",
-        "≤1 Active Backlog",
-        "≤3 years pre-graduation gap",
-        "No gap during graduation",
-      ],
-      color: "from-purple-500 to-purple-600",
-    },
-  ];
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
-  }
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold mb-2">Campus Placements</h1>
-        <p className="text-muted-foreground">
-          Apply for campus placement drives and track your application progress
-        </p>
-      </div>
+    <div className="min-h-screen p-6 md:p-10 max-w-[1600px] mx-auto space-y-8">
 
-      {/* My Applications */}
-      {applications.length > 0 && (
-        <div className="space-y-4">
-          <h2 className="text-2xl font-semibold">My Applications</h2>
-          <div className="grid gap-4">
-            {applications.map((app) => (
-              <Card key={app.id} className="hover:shadow-lg transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${app.company === "TCS" ? "from-blue-500 to-blue-600" : "from-purple-500 to-purple-600"} flex items-center justify-center text-white font-bold text-lg`}>
-                        {app.company[0]}
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-lg">{app.company}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Applied on {new Date(app.createdAt).toLocaleDateString()}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      {getStatusBadge(app.status)}
-                      {app.finalTrack && (
-                        <Badge variant="outline" className="font-semibold">
-                          {app.finalTrack}
-                        </Badge>
-                      )}
-                      {app.status !== "rejected" && app.status !== "withdrawn" && app.status !== "completed" && (
-                        <Button
-                          onClick={() => router.push(`/dashboard/placements/${app.id}`)}
-                        >
-                          Continue
-                          <ArrowRight className="w-4 h-4 ml-2" />
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+      {/* Header & Breadcrumbs */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="space-y-6"
+      >
+        <div className="flex items-center gap-2 text-sm text-muted-foreground bg-white/50 w-fit px-3 py-1 rounded-full border border-gray-200/50 backdrop-blur-sm">
+          <Link href="/dashboard" className="flex items-center gap-1 hover:text-emerald-600 transition-colors">
+            <LayoutDashboard className="w-3.5 h-3.5" />
+            Dashboard
+          </Link>
+          <ChevronRight className="w-3 h-3 text-gray-300" />
+          <span className="font-medium text-gray-900">Placements</span>
+        </div>
+
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-900 to-teal-800 text-white p-8 shadow-xl shadow-emerald-900/10">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-emerald-500/10 rounded-full blur-2xl -ml-10 -mb-10 pointer-events-none"></div>
+
+          <div className="relative z-10 flex justify-between items-end">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-emerald-200 font-medium mb-1">
+
+                <span>Placement Drive 2025</span>
+              </div>
+              <h1 className="text-4xl font-bold tracking-tight">Application Portal</h1>
+              <p className="text-emerald-100/80 text-lg max-w-xl">
+                Track your applications, manage assessments, and maximize your career opportunities all in one place.
+              </p>
+            </div>
+
+            {/* Abstract Decor */}
+            <div className="hidden md:block">
+              <div className="flex gap-3">
+                <div className="px-4 py-2 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-sm font-medium">
+                  🎯  92% Success Rate
+                </div>
+                <div className="px-4 py-2 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-sm font-medium">
+                  🚀  500+ Companies
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      )}
+      </motion.div>
 
-      {/* Available Companies */}
-      <div className="space-y-4">
-        <h2 className="text-2xl font-semibold">Available Companies</h2>
-        <div className="grid md:grid-cols-2 gap-6">
-          {companies.map((company) => {
-            const hasActiveApplication = applications.some(
-              (app) => app.company === company.name && !["rejected", "withdrawn", "completed"].includes(app.status)
-            );
+      <motion.div
+        variants={container}
+        initial="hidden"
+        animate="show"
+        className="grid grid-cols-1 xl:grid-cols-4 gap-8 items-start"
+      >
+        {/* Main Content Area */}
+        <motion.div variants={item} className="xl:col-span-3 space-y-6">
+          <div className="backdrop-blur-sm bg-white/60 p-1 rounded-2xl border border-gray-100/50">
+            <PlacementFilters />
+          </div>
 
-            return (
-              <Card key={company.name} className="hover:shadow-xl transition-all duration-300">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${company.color} flex items-center justify-center text-white shadow-lg`}>
-                        <Building2 className="w-7 h-7" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-xl">{company.fullName}</CardTitle>
-                        <CardDescription className="mt-1">{company.description}</CardDescription>
-                      </div>
-                    </div>
+          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden ring-1 ring-gray-200/50">
+            <ApplicationsTable />
+          </div>
+        </motion.div>
+
+        {/* Sidebar / Extras */}
+        <motion.div variants={item} className="xl:col-span-1 space-y-6 sticky top-8">
+          <ProUpgradeCard />
+
+          {/* Quick Stats */}
+          <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 relative overflow-hidden group hover:shadow-md transition-shadow">
+            <div className="flex items-center gap-2 mb-6">
+              <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
+                <TrendingUp className="w-5 h-5" />
+              </div>
+              <h4 className="font-bold text-gray-900 text-lg">Your Insights</h4>
+            </div>
+
+            <div className="space-y-5">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                    <Briefcase className="w-4 h-4" />
                   </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {/* Eligibility Criteria */}
-                  <div>
-                    <h4 className="font-semibold mb-2 flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-green-500" />
-                      Eligibility Criteria
-                    </h4>
-                    <ul className="space-y-1 text-sm text-muted-foreground">
-                      {company.eligibility.map((criteria, idx) => (
-                        <li key={idx} className="flex items-center gap-2">
-                          <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                          {criteria}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                  <span className="text-sm text-gray-600 font-medium">Applications</span>
+                </div>
+                <span className="font-bold text-gray-900 text-lg">1,248</span>
+              </div>
 
-                  {/* Selection Process */}
-                  <div>
-                    <h4 className="font-semibold mb-2 flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-blue-500" />
-                      Selection Process
-                    </h4>
-                    <div className="flex flex-wrap gap-2">
-                      {company.process.map((step, idx) => (
-                        <Badge key={idx} variant="outline" className="text-xs">
-                          {idx + 1}. {step}
-                        </Badge>
-                      ))}
-                    </div>
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600">
+                    <Award className="w-4 h-4" />
                   </div>
+                  <span className="text-sm text-gray-600 font-medium">Selection Rate</span>
+                </div>
+                <span className="font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full text-xs">+ 14.2%</span>
+              </div>
 
-                  <Button
-                    className="w-full"
-                    size="lg"
-                    onClick={() => handleApply(company.name)}
-                    disabled={hasActiveApplication}
-                  >
-                    {hasActiveApplication ? (
-                      <>
-                        <CheckCircle2 className="w-4 h-4 mr-2" />
-                        Application In Progress
-                      </>
-                    ) : (
-                      <>
-                        Apply Now
-                        <ArrowRight className="w-4 h-4 ml-2" />
-                      </>
-                    )}
-                  </Button>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      </div>
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-amber-50 flex items-center justify-center text-amber-600">
+                    <Clock className="w-4 h-4" />
+                  </div>
+                  <span className="text-sm text-gray-600 font-medium">Pending</span>
+                </div>
+                <span className="font-bold text-amber-600">45</span>
+              </div>
+            </div>
+
+            <div className="mt-8 pt-6 border-t border-gray-100">
+              <div className="flex justify-between text-xs mb-2">
+                <span className="text-gray-500 font-medium">Profile Completion</span>
+                <span className="text-emerald-600 font-bold">75%</span>
+              </div>
+              <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: "75%" }}
+                  transition={{ duration: 1, delay: 0.5 }}
+                  className="bg-emerald-500 h-full rounded-full shadow-[0_0_10px_rgba(16,185,129,0.3)]"
+                ></motion.div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </motion.div>
     </div>
   );
 }

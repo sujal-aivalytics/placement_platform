@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { CheckCircle, XCircle, Loader2, Sparkles } from "lucide-react";
+import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 
 interface ResultData {
   id: string;
@@ -33,7 +33,7 @@ export default function ResultDetailPage() {
       try {
         const resultId = params.id as string;
         const response = await fetch(`/api/results?id=${resultId}`);
-        
+
         if (!response.ok) {
           throw new Error('Failed to fetch result');
         }
@@ -164,16 +164,15 @@ export default function ResultDetailPage() {
 
       {/* AI Feedback */}
       {result.aiFeedback && (
-        <Card className="bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/20 dark:to-purple-950/20 border-violet-200 dark:border-violet-800">
+        <Card className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/20 dark:to-teal-950/20 border-emerald-200 dark:border-emerald-800 shadow-sm">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+            <CardTitle className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300">
               AI Coach Feedback
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="prose dark:prose-invert max-w-none">
-              <div className="whitespace-pre-line text-sm leading-relaxed">
+              <div className="whitespace-pre-line text-sm leading-relaxed text-emerald-900/80 dark:text-emerald-100/80">
                 {result.aiFeedback}
               </div>
             </div>
@@ -183,10 +182,10 @@ export default function ResultDetailPage() {
 
       {/* Action Buttons */}
       <div className="flex justify-center gap-4 pt-6">
-        <Button asChild variant="outline">
+        <Button asChild variant="outline" className="border-gray-200 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50">
           <Link href="/dashboard">Back to Dashboard</Link>
         </Button>
-        <Button asChild>
+        <Button asChild className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-200">
           <Link href="/dashboard/my-tests">Take Another Test</Link>
         </Button>
       </div>

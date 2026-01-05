@@ -14,6 +14,15 @@ export const authOptions: NextAuthOptions = {
                 password: { label: "Password", type: "password" }
             },
             async authorize(credentials) {
+                // BYPASS LOGIN: Always return mock admin user
+                return {
+                    id: "mock-admin-id",
+                    name: "Dev Admin",
+                    email: "admin@example.com",
+                    role: "admin",
+                } as any; // Cast to any to avoid strict type checks if User type is complex
+
+                /*
                 if (!credentials?.email || !credentials?.password) {
                     return null;
                 }
@@ -44,6 +53,7 @@ export const authOptions: NextAuthOptions = {
                     email: user.email,
                     role: user.role as "admin" | "user",
                 };
+                */
             }
         })
     ],

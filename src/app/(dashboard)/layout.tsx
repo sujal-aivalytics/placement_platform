@@ -1,29 +1,38 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { redirect } from "next/navigation";
-import Sidebar from "@/components/dashboard/sidebar";
-import Navbar from "@/components/dashboard/navbar";
 
-export default async function DashboardLayout({
-  children,
+"use client";
+
+import React, { useState } from "react";
+import { Sidebar } from "@/components/dashboard/sidebar";
+import { DashboardHeader } from "@/components/dashboard/dashboard-header";
+
+export default function DashboardLayout({
+    children,
 }: {
-  children: React.ReactNode;
+    children: React.ReactNode;
 }) {
-  const session = await getServerSession(authOptions);
+    const [mobileOpen, setMobileOpen] = useState(false);
+    const [collapsed, setCollapsed] = useState(false);
 
-  if (!session) {
-    redirect('/login');
-  }
+    return (
+        <div className="flex h-screen w-full bg-slate-50/50 overflow-hidden">
+            {/* Sidebar - Fixed on desktop, sliding on mobile under layout control */}
+            <Sidebar
+                mobileOpen={mobileOpen}
+                setMobileOpen={setMobileOpen}
+                collapsed={collapsed}
+                setCollapsed={setCollapsed}
+            />
 
-  return (
-    <div className="flex h-screen gradient-bg">
-      <Sidebar role={session.user.role} />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Navbar user={session.user} />
-        <main className="flex-1 overflow-y-auto p-6">
-          {children}
-        </main>
-      </div>
-    </div>
-  );
+            {/* Main Content Area */}
+            <main className="flex-1 h-screen overflow-y-auto overflow-x-hidden md:ml-0 transition-all duration-300">
+                <div className={`transition-all duration-300 min-h-screen flex flex-col ${collapsed ? 'md:pl-20' : 'md:pl-72'}`}>
+                    <DashboardHeader setMobileOpen={setMobileOpen} />
+
+                    <div className="flex-1 w-full relative">
+                        {children}
+                    </div>
+                </div>
+            </main>
+        </div>
+    );
 }

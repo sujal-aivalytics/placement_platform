@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Building2, Loader2, FileText, Code, Mic, MessageSquare, Award } from "lucide-react";
+import { Building2, Loader2, FileText, Code, Mic, MessageSquare, Award, Clock } from "lucide-react";
+import { PageHeader } from "@/components/dashboard/page-header";
+import { motion } from "framer-motion";
 
 interface Test {
   id: string;
@@ -27,6 +29,21 @@ interface PlacementTest {
   route: string;
   color: string;
 }
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+};
 
 export default function CompaniesPage() {
   const [tests, setTests] = useState<Test[]>([]);
@@ -130,150 +147,177 @@ export default function CompaniesPage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="flex justify-center items-center h-[calc(100vh-200px)]">
+        <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Company Specific Tests</h1>
-        <p className="text-muted-foreground mt-2">
-          Practice with company-specific placement tests and assessments
-        </p>
-      </div>
+    <motion.div
+      variants={container}
+      initial="hidden"
+      animate="show"
+      className="space-y-8 pb-8"
+    >
+      <motion.div variants={item}>
+        <PageHeader
+          title="Company Specific Tests"
+          description="Practice with company-specific placement tests and assessments"
+        />
+      </motion.div>
+
+      {/* Info Card - Glass Effect */}
+      <motion.div variants={item}>
+        <Card className="border-none bg-gradient-to-r from-emerald-500/10 to-teal-500/10 backdrop-blur-sm shadow-sm">
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-4">
+              <div className="p-3 bg-emerald-100/50 rounded-xl backdrop-blur-sm">
+                <Building2 className="w-6 h-6 text-emerald-700" />
+              </div>
+              <div>
+                <h3 className="font-bold text-lg mb-2 text-gray-900">About Placement Tests</h3>
+                <p className="text-sm text-gray-600 mb-3 leading-relaxed">
+                  These tests simulate actual company placement assessments. Practice as many times as you want to improve your skills.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-500">
+                  <div className="flex items-center gap-2"><Clock className="w-4 h-4 text-emerald-500" /> Timed tests to simulate pressure</div>
+                  <div className="flex items-center gap-2"><Award className="w-4 h-4 text-emerald-500" /> Comprehensive result analysis</div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
 
       {/* Placement Tests Section */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <Building2 className="w-6 h-6 text-primary" />
-          <h2 className="text-2xl font-bold">Placement Assessment Tests</h2>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          Take individual placement tests directly. Practice for TCS and Wipro recruitment drives.
-        </p>
-
+      <div className="space-y-8">
         {/* TCS Tests */}
-        <div className="space-y-3">
-          <h3 className="text-lg font-semibold text-blue-600 flex items-center gap-2">
-            <Building2 className="w-5 h-5" />
-            TCS Tests
-          </h3>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {placementTests.filter(t => t.company === 'TCS').map((test) => {
+        <motion.div variants={item} className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-1 bg-blue-600 rounded-full" />
+            <h3 className="text-xl font-bold flex items-center gap-2 text-gray-900">TCS Recruitment Drive</h3>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {placementTests.filter(t => t.company === 'TCS').map((test, i) => {
               const Icon = test.icon;
               return (
-                <Card key={test.id} className="hover:shadow-lg transition-all border-2 hover:border-primary/50">
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className={`p-3 rounded-lg bg-gradient-to-r ${test.color}`}>
-                        <Icon className="w-6 h-6 text-white" />
-                      </div>
-                      <div className="text-right">
-                        <div className="text-xs text-muted-foreground">Duration</div>
-                        <div className="text-sm font-semibold">{test.duration}</div>
-                      </div>
-                    </div>
-                    <CardTitle className="mt-4">{test.title}</CardTitle>
-                    <p className="text-sm text-muted-foreground">{test.description}</p>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-sm text-muted-foreground">
-                        {test.questions} {test.questions === 1 ? 'Question' : 'Questions'}
-                      </span>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r ${test.color} text-white`}>
+                <Card key={test.id} className="group hover:-translate-y-1 duration-300 border-gray-100 hover:shadow-lg hover:border-blue-100 bg-white/50 backdrop-blur-sm">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between mb-2">
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r ${test.color} text-white shadow-md`}>
                         {test.company}
                       </span>
+                      <div className="flex items-center text-xs font-medium text-muted-foreground bg-gray-50 px-2 py-1 rounded-md border border-gray-100">
+                        <Clock className="w-3 h-3 mr-1" />
+                        {test.duration}
+                      </div>
                     </div>
-                    <Button asChild className={`w-full bg-gradient-to-r ${test.color} hover:opacity-90`}>
-                      <Link href={test.route}>
-                        Start Test
-                      </Link>
-                    </Button>
+                    <div className="flex items-center gap-3 mb-1">
+                      <div className={`p-2 rounded-lg bg-gradient-to-r ${test.color} bg-opacity-10 opacity-80`}>
+                        <Icon className="w-5 h-5 text-white" />
+                      </div>
+                      <CardTitle className="text-lg line-clamp-1">{test.title}</CardTitle>
+                    </div>
+                    <CardDescription className="line-clamp-2">{test.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between mt-2 pt-4 border-t border-gray-100">
+                      <span className="text-sm font-medium text-gray-500">
+                        {test.questions} Questions
+                      </span>
+                      <Button asChild size="sm" className="rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg transition-all">
+                        <Link href={test.route}>
+                          Start Test
+                        </Link>
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               );
             })}
           </div>
-        </div>
+        </motion.div>
 
         {/* Wipro Tests */}
-        <div className="space-y-3 mt-8">
-          <h3 className="text-lg font-semibold text-orange-600 flex items-center gap-2">
-            <Building2 className="w-5 h-5" />
-            Wipro Tests
-          </h3>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <motion.div variants={item} className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-1 bg-orange-600 rounded-full" />
+            <h3 className="text-xl font-bold flex items-center gap-2 text-gray-900">Wipro NTH Drive</h3>
+          </div>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {placementTests.filter(t => t.company === 'Wipro').map((test) => {
               const Icon = test.icon;
               return (
-                <Card key={test.id} className="hover:shadow-lg transition-all border-2 hover:border-primary/50">
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className={`p-3 rounded-lg bg-gradient-to-r ${test.color}`}>
-                        <Icon className="w-6 h-6 text-white" />
-                      </div>
-                      <div className="text-right">
-                        <div className="text-xs text-muted-foreground">Duration</div>
-                        <div className="text-sm font-semibold">{test.duration}</div>
-                      </div>
-                    </div>
-                    <CardTitle className="mt-4">{test.title}</CardTitle>
-                    <p className="text-sm text-muted-foreground">{test.description}</p>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-sm text-muted-foreground">
-                        {test.questions} {test.questions === 1 ? 'Question' : 'Questions'}
-                      </span>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r ${test.color} text-white`}>
+                <Card key={test.id} className="group hover:-translate-y-1 duration-300 border-gray-100 hover:shadow-lg hover:border-orange-100 bg-white/50 backdrop-blur-sm">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between mb-2">
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r ${test.color} text-white shadow-md`}>
                         {test.company}
                       </span>
+                      <div className="flex items-center text-xs font-medium text-muted-foreground bg-gray-50 px-2 py-1 rounded-md border border-gray-100">
+                        <Clock className="w-3 h-3 mr-1" />
+                        {test.duration}
+                      </div>
                     </div>
-                    <Button asChild className={`w-full bg-gradient-to-r ${test.color} hover:opacity-90`}>
-                      <Link href={test.route}>
-                        Start Test
-                      </Link>
-                    </Button>
+                    <div className="flex items-center gap-3 mb-1">
+                      <div className={`p-2 rounded-lg bg-gradient-to-r ${test.color} bg-opacity-10 opacity-80`}>
+                        <Icon className="w-5 h-5 text-white" />
+                      </div>
+                      <CardTitle className="text-lg line-clamp-1">{test.title}</CardTitle>
+                    </div>
+                    <CardDescription className="line-clamp-2">{test.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between mt-2 pt-4 border-t border-gray-100">
+                      <span className="text-sm font-medium text-gray-500">
+                        {test.questions} Questions
+                      </span>
+                      <Button asChild size="sm" className="rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg transition-all">
+                        <Link href={test.route}>
+                          Start Test
+                        </Link>
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               );
             })}
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* Admin Created Company Tests */}
       {tests.length > 0 && (
-        <div className="space-y-4 mt-8">
-          <div className="flex items-center gap-2">
-            <Building2 className="w-6 h-6 text-primary" />
-            <h2 className="text-2xl font-bold">Additional Company Tests</h2>
+        <motion.div variants={item} className="space-y-4 mt-12">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-1 bg-emerald-600 rounded-full" />
+            <h3 className="text-xl font-bold flex items-center gap-2 text-gray-900">Additional Company Tests</h3>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-gray-500 -mt-2">
             Custom company tests created by administrators
           </p>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {tests.map((test) => (
-              <Card key={test.id} className="hover:shadow-md transition-shadow">
-                <CardHeader className="flex flex-row items-center gap-4">
-                  <div className="p-2 bg-primary/10 rounded-full">
-                    <Building2 className="w-6 h-6 text-primary" />
+              <Card key={test.id} className="group hover:-translate-y-1 duration-300 border-gray-100 hover:shadow-lg hover:border-emerald-200 bg-white/50 backdrop-blur-sm">
+                <CardHeader className="flex flex-row items-center gap-4 pb-2">
+                  <div className="p-3 bg-emerald-50 rounded-xl group-hover:bg-emerald-100 transition-colors">
+                    <Building2 className="w-6 h-6 text-emerald-600" />
                   </div>
                   <div>
-                    <CardTitle>{test.company || test.title}</CardTitle>
-                    <p className="text-sm text-muted-foreground">{test.title}</p>
+                    <CardTitle className="text-lg">{test.company || test.title}</CardTitle>
+                    <CardDescription className="text-xs font-medium bg-gray-50 inline-block px-2 py-0.5 rounded mt-1 border border-gray-100">
+                      {test.title}
+                    </CardDescription>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <div className="flex justify-between items-center mb-4 text-sm text-muted-foreground">
-                    <span>Duration: {test.duration} mins</span>
-                    <span>{test._count?.questions || 0} Questions</span>
+                <CardContent className="pt-2">
+                  <div className="flex justify-between items-center mb-4 text-sm font-medium text-gray-500 bg-gray-50 p-2 rounded-lg border border-gray-100">
+                    <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {test.duration} mins</span>
+                    <span>{test._count?.questions || 0} Qs</span>
                   </div>
-                  <Button asChild className="w-full">
+                  <Button asChild className="w-full rounded-full shadow-md hover:shadow-lg transition-all bg-blue-600 hover:bg-blue-700 text-white">
                     <Link href={`/dashboard/test/${test.id}`}>
                       Start Test
                     </Link>
@@ -282,31 +326,8 @@ export default function CompaniesPage() {
               </Card>
             ))}
           </div>
-        </div>
+        </motion.div>
       )}
-
-      {/* Info Card */}
-      <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
-        <CardContent className="pt-6">
-          <div className="flex items-start gap-4">
-            <div className="p-3 bg-blue-600 rounded-lg">
-              <Building2 className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-lg mb-2">About Placement Tests</h3>
-              <p className="text-sm text-muted-foreground mb-2">
-                These tests simulate actual company placement assessments. Practice as many times as you want to improve your skills.
-              </p>
-              <ul className="text-sm text-muted-foreground space-y-1">
-                <li>• Each test has a time limit - manage your time wisely</li>
-                <li>• You can take tests multiple times to improve</li>
-                <li>• Results are saved and can be reviewed anytime</li>
-                <li>• For full placement simulation, visit the Placements section</li>
-              </ul>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+    </motion.div>
   );
 }
