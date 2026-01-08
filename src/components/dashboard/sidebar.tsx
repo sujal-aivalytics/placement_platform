@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
@@ -27,8 +27,6 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 
-/* -------------------------------- Sidebar Item -------------------------------- */
-
 interface SidebarItemProps {
   icon: any;
   label: string;
@@ -54,7 +52,6 @@ const SidebarItem = ({
             : "text-gray-500 hover:text-gray-900 hover:bg-gray-50/80"
         )}
       >
-        {/* Active Indicator (Left Border/Pill) */}
         {active && (
           <motion.div
             layoutId="active-nav-indicator"
@@ -78,7 +75,6 @@ const SidebarItem = ({
           </span>
         )}
 
-        {/* Collapsed Tooltip */}
         {collapsed && (
           <div className="absolute left-full ml-4 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 whitespace-nowrap">
             {label}
@@ -89,52 +85,48 @@ const SidebarItem = ({
   );
 };
 
-/* -------------------------------- Sidebar -------------------------------- */
-
 interface SidebarProps {
-  mobileOpen: boolean;
   setMobileOpen: (open: boolean) => void;
   collapsed: boolean;
   setCollapsed: (collapsed: boolean) => void;
   role?: string;
 }
 
-export default function Sidebar({ mobileOpen, setMobileOpen, collapsed, setCollapsed, role = 'user' }: SidebarProps) {
-  const pathname = usePathname();
+interface SidebarContentProps {
+  role?: string;
+  pathname: string | null;
+  collapsed: boolean;
+}
 
-  const userLinks = [
-    { href: '/dashboard', label: 'Home', icon: LayoutDashboard },
-    { href: '/dashboard/placements', label: 'Placements', icon: Briefcase },
-    { href: '/dashboard/my-tests', label: 'My Tests', icon: ClipboardList },
-    { href: '/dashboard/topics', label: 'Topics', icon: BookOpen },
-    { href: '/dashboard/companies', label: 'Company', icon: Building2 },
-    { href: '/dashboard/results', label: 'Results', icon: BarChart3 },
-    { href: '/dashboard/profile', label: 'Setting', icon: Settings },
-  ];
+const userLinks = [
+  { href: '/dashboard', label: 'Home', icon: LayoutDashboard },
+  { href: '/dashboard/placements', label: 'Placements', icon: Briefcase },
+  { href: '/dashboard/my-tests', label: 'My Tests', icon: ClipboardList },
+  { href: '/dashboard/topics', label: 'Topics', icon: BookOpen },
+  { href: '/dashboard/companies', label: 'Company', icon: Building2 },
+  { href: '/dashboard/results', label: 'Results', icon: BarChart3 },
+  { href: '/dashboard/profile', label: 'Setting', icon: Settings },
+];
 
-  const adminLinks = [
-    { href: '/admin', label: 'Overview', icon: LayoutDashboard },
-    { href: '/admin/placements', label: 'Placements', icon: Briefcase },
-    { href: '/admin/placement-questions', label: 'Questions', icon: FileQuestion },
-    { href: '/admin/tests', label: 'Tests', icon: GraduationCap },
-    { href: '/admin/company-tests', label: 'Company Tests', icon: Building2 },
-    { href: '/admin/users', label: 'Users', icon: Users },
-    { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
-    { href: '/dashboard/profile', label: 'Setting', icon: Settings },
-  ];
+const adminLinks = [
+  { href: '/admin', label: 'Overview', icon: LayoutDashboard },
+  { href: '/admin/placements', label: 'Placements', icon: Briefcase },
+  { href: '/admin/placement-questions', label: 'Questions', icon: FileQuestion },
+  { href: '/admin/tests', label: 'Tests', icon: GraduationCap },
+  { href: '/admin/company-tests', label: 'Company Tests', icon: Building2 },
+  { href: '/admin/users', label: 'Users', icon: Users },
+  { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
+  { href: '/dashboard/profile', label: 'Setting', icon: Settings },
+];
 
-const SidebarContent = ({ role, pathname, onLinkClick }: SidebarContentProps) => {
+const SidebarContent = ({ role, pathname, collapsed }: SidebarContentProps) => {
   const links = role === 'admin' ? adminLinks : userLinks;
 
-  const SidebarContent = () => (
+  return (
     <div className="flex flex-col h-full bg-white border-r border-gray-100">
-      {/* Header */}
       <div className={cn("h-20 flex items-center px-6", collapsed ? "justify-center px-2" : "")}>
         {!collapsed ? (
           <div className="flex items-center gap-2">
-            {/* <div className="h-8 w-8 bg-gray-900 rounded-lg flex items-center justify-center">
-              <Zap className="h-5 w-5 text-white fill-white" />
-            </div> */}
             <span className="font-bold text-xl tracking-tight text-gray-900">AiValytics</span>
           </div>
         ) : (
@@ -144,7 +136,6 @@ const SidebarContent = ({ role, pathname, onLinkClick }: SidebarContentProps) =>
         )}
       </div>
 
-      {/* Navigation */}
       <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto scrollbar-hide">
         {links.map((link) => (
           <SidebarItem
@@ -158,11 +149,9 @@ const SidebarContent = ({ role, pathname, onLinkClick }: SidebarContentProps) =>
         ))}
       </nav>
 
-      {/* Footer / Upgrade Card */}
       <div className="p-4 mt-auto">
         {!collapsed && role !== 'admin' ? (
           <div className="bg-gray-50 rounded-2xl p-4 relative overflow-hidden group">
-            {/* Decorative blob */}
             <div className="absolute -top-10 -right-10 w-24 h-24 bg-gradient-to-br from-blue-200 to-purple-200 rounded-full blur-xl opacity-60 group-hover:opacity-100 transition-opacity" />
 
             <div className="relative z-10 text-center space-y-3">
@@ -186,7 +175,6 @@ const SidebarContent = ({ role, pathname, onLinkClick }: SidebarContentProps) =>
           </div>
         )}
 
-        {/* User / Logout Section (Mobile or Desktop Bottom) */}
         {!collapsed && (
           <div className="mt-4 pt-4 border-t border-gray-100">
             <Button variant="ghost" className="w-full justify-start gap-3 text-gray-500 hover:text-gray-900 hover:bg-transparent px-2">
@@ -208,22 +196,20 @@ const SidebarContent = ({ role, pathname, onLinkClick }: SidebarContentProps) =>
   );
 };
 
-export default function Sidebar({ role }: SidebarProps) {
+export default function Sidebar({ setMobileOpen, collapsed, setCollapsed, role = 'user' }: SidebarProps) {
   const pathname = usePathname();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [mobileOpen, setLocalMobileOpen] = useState(false);
 
   return (
     <>
-      {/* Desktop Sidebar */}
       <aside
         className={cn(
           "fixed inset-y-0 left-0 z-30 hidden lg:flex flex-col bg-white transition-all duration-300 ease-in-out border-r border-gray-100",
           collapsed ? "w-24" : "w-[280px]"
         )}
       >
-        <SidebarContent />
+        <SidebarContent role={role} pathname={pathname} collapsed={collapsed} />
 
-        {/* Collapse Toggle */}
         <div className="absolute top-8 -right-3">
           <Button
             variant="outline"
@@ -236,15 +222,17 @@ export default function Sidebar({ role }: SidebarProps) {
         </div>
       </aside>
 
-      {/* Mobile Menu Button */}
       <button
-        onClick={() => setMobileOpen(!mobileOpen)}
+        onClick={() => {
+          const next = !mobileOpen;
+          setLocalMobileOpen(next);
+          setMobileOpen(next);
+        }}
         className="lg:hidden fixed bottom-6 right-6 z-50 w-12 h-12 bg-gray-900 text-white rounded-full shadow-lg flex items-center justify-center hover:scale-105 transition-transform"
       >
         {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
       </button>
 
-      {/* Mobile Sidebar Overlay */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
@@ -252,19 +240,21 @@ export default function Sidebar({ role }: SidebarProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="lg:hidden fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
-            onClick={() => setMobileOpen(false)}
+            onClick={() => {
+              setLocalMobileOpen(false);
+              setMobileOpen(false);
+            }}
           />
         )}
       </AnimatePresence>
 
-      {/* Mobile Sidebar */}
       <motion.aside
         initial={{ x: "-100%" }}
         animate={{ x: mobileOpen ? 0 : "-100%" }}
         transition={{ type: "spring", damping: 25, stiffness: 200 }}
         className="lg:hidden fixed top-0 left-0 bottom-0 w-[280px] z-50 shadow-2xl"
       >
-        <SidebarContent />
+        <SidebarContent role={role} pathname={pathname} collapsed={false} />
       </motion.aside>
     </>
   );
