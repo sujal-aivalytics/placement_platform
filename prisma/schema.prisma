@@ -6,7 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 
@@ -68,6 +69,7 @@ model User {
   sessions              Session[]
   results               Result[]
   placementApplications PlacementApplication[]
+  subtopicProgress      UserSubtopicProgress[]
 }
 
 model VerificationToken {
@@ -94,11 +96,30 @@ model Test {
   results            Result[]
   assignments        TestAssignment[]
   assessmentStages   AssessmentStage[]
+  subtopics          Subtopic[]
+}
+
+model Subtopic {
+  id                    String                  @id @default(cuid())
+  testId                String
+  name                  String
+  description           String?
+  totalQuestions        Int                     @default(0)
+  order                 Int?                    // Display order
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+  
+  test                  Test                    @relation(fields: [testId], references: [id], onDelete: Cascade)
+  questions             Question[]
+  userProgress          UserSubtopicProgress[]
+  
+  @@index([testId])
 }
 
 model Question {
   id          String   @id @default(cuid())
   testId      String
+  subtopicId  String?  // Optional - questions can belong to a subtopic
   text        String
   type        String   @default("multiple-choice") // multiple-choice, true-false, coding, essay
   category    String?  // numerical, verbal, reasoning, logical, quant
@@ -108,7 +129,11 @@ model Question {
   
   options     Option[]
   
-  test        Test     @relation(fields: [testId], references: [id], onDelete: Cascade)
+  test        Test      @relation(fields: [testId], references: [id], onDelete: Cascade)
+  subtopic    Subtopic? @relation(fields: [subtopicId], references: [id], onDelete: SetNull)
+  
+  @@index([testId])
+  @@index([subtopicId])
 }
 
 model Option {
@@ -132,6 +157,28 @@ model Result {
   
   user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   test              Test                @relation(fields: [testId], references: [id], onDelete: Cascade)
+}
+
+model UserSubtopicProgress {
+  id                String              @id @default(cuid())
+  userId            String
+  subtopicId        String
+  score             Int?
+  total             Int?
+  percentage        Float?
+  attempted         Boolean             @default(false)
+  completed         Boolean             @default(false)
+  answers           String?             @db.Text // JSON of user answers
+  timeSpent         Int?                // in seconds
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  
+  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subtopic          Subtopic            @relation(fields: [subtopicId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, subtopicId])
+  @@index([userId])
+  @@index([subtopicId])
 }
 
 model TestAssignment {

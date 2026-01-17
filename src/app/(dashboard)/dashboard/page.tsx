@@ -249,14 +249,14 @@ export default function UserDashboard() {
           </div>
 
           {/* Performance Chart */}
-          <div className="bg-white p-8 rounded-[32px] shadow-sm border border-gray-100">
+          <div className="bg-white p-8 rounded-[32px] shadow-sm border border-gray-100 min-h-[450px]">
             <div className="flex justify-between items-center mb-8">
               <h3 className="text-xl font-bold text-gray-900">Performance</h3>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-gray-500 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200 cursor-pointer">01-07 May ▼</span>
               </div>
             </div>
-            <div className="h-[300px] w-full">
+            <div className="h-[300px] w-full min-h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={chartData.length > 0 ? chartData : [{ name: "01", score: 40 }, { name: "02", score: 60 }, { name: "03", score: 55 }, { name: "04", score: 80 }, { name: "05", score: 70 }]}>
                   <defs>
