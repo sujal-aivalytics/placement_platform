@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
 
 
@@ -6,16 +6,16 @@ import { NextResponse } from "next/server";
 
 
 
-const ai = new GoogleGenAI({apiKey:process.env.GEMINI_API_KEY});
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 
 
 
-export async function POST(req:Request) {
-  try{
-    const body=await req.json();
+export async function POST(req: Request) {
+  try {
+    const body = await req.json();
 
-    const{score,total,percentage,testTitle, difficulty }=body;
+    const { score, total, percentage, testTitle, difficulty } = body;
 
     const prompt = `
       You are an AI career coach.
@@ -42,15 +42,12 @@ export async function POST(req:Request) {
       }
     `;
 
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
 
-  const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
-    contents:prompt,
-  });
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
 
-
-
-  const text = response.text ?? "{}";
 
 
     let feedback: {
