@@ -16,12 +16,15 @@ import {
   Building2,
   BookOpen,
   ClipboardList,
+  Mic,
   Menu,
   X,
   ChevronLeft,
   ChevronRight,
   Zap,
   HelpCircle,
+  MonitorPlay,
+  AudioLines
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -38,7 +41,7 @@ interface SidebarProps {
 }
 
 interface SidebarItemProps {
-  icon: any;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   label: string;
   href: string;
   active: boolean;
@@ -92,8 +95,11 @@ const SidebarContent = ({
     { href: "/dashboard", label: "Home", icon: LayoutDashboard },
     { href: "/dashboard/placements", label: "Placements", icon: Briefcase },
     { href: "/dashboard/my-tests", label: "My Tests", icon: ClipboardList },
+    { href: "/dashboard/interview-suite", label: "AI Interview Suite", icon: Mic },
+    { href: "/dashboard/voice-assessment", label: "Voice Assessment", icon: AudioLines },
     { href: "/dashboard/topics", label: "Topics", icon: BookOpen },
     { href: "/dashboard/companies", label: "Companies", icon: Building2 },
+    { href: "/dashboard/mock-tests", label: "Mock Tests", icon: MonitorPlay },
     { href: "/dashboard/results", label: "Results", icon: BarChart3 },
     { href: "/dashboard/profile", label: "Settings", icon: Settings },
   ];
@@ -108,7 +114,7 @@ const SidebarContent = ({
   const links = role === "admin" ? adminLinks : userLinks;
 
   return (
-    <div className="flex flex-col h-full bg-white border-r">
+    <div className="flex flex-col h-full bg-white">
       <div className="h-20 flex items-center px-6">
         {!collapsed ? (
           <span className="font-bold text-xl">AiValytics</span>
@@ -160,8 +166,8 @@ export default function Sidebar({
       {/* Desktop */}
       <aside
         className={cn(
-          "hidden lg:flex fixed inset-y-0 left-0 bg-white transition-all border-r",
-          collapsed ? "w-24" : "w-[280px]"
+          "hidden lg:flex fixed inset-y-0 left-0 bg-white transition-all border-r z-40",
+          collapsed ? "w-24" : "w-64"
         )}
       >
         <SidebarContent role={role} collapsed={collapsed} pathname={pathname} />
@@ -191,7 +197,7 @@ export default function Sidebar({
             initial={{ x: "-100%" }}
             animate={{ x: 0 }}
             exit={{ x: "-100%" }}
-            className="lg:hidden fixed inset-y-0 left-0 w-[280px] bg-white z-50"
+            className="lg:hidden fixed inset-y-0 left-0 w-64 bg-white z-50 shadow-xl"
           >
             <SidebarContent
               role={role}
