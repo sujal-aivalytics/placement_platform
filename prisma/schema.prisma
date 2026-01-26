@@ -59,8 +59,9 @@ model User {
   placementApplications PlacementApplication[]
   results               Result[]
   sessions              Session[]
-  submissions           Submissions[]
+  testEligibilities     TestEligibility[]     @relation("userTestEligibilities")
   subtopicProgress      UserSubtopicProgress[]
+  submissions           Submissions[]         @relation("userSubmissions")
 }
 
 model VerificationToken {
@@ -72,21 +73,23 @@ model VerificationToken {
 }
 
 model Test {
-  id               String            @id @default(cuid())
-  title            String
-  description      String?
-  duration         Int
-  difficulty       String
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  company          String?
-  topic            String?
-  type             String?           @default("topic")
-  assessmentStages AssessmentStage[]
-  questions        Question[]
-  results          Result[]
-  subtopics        Subtopic[]
-  assignments      TestAssignment[]
+  id                  String            @id @default(cuid())
+  title               String
+  description         String?
+  duration            Int
+  difficulty          String
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  company             String?
+  topic               String?
+  type                String?           @default("topic")
+  eligibilityCriteria Json?
+  assessmentStages    AssessmentStage[]
+  questions           Question[]
+  results             Result[]
+  subtopics           Subtopic[]
+  assignments         TestAssignment[]
+  TestEligibility     TestEligibility[]
 }
 
 model Question {
@@ -106,15 +109,15 @@ model Question {
 
 model Subtopic {
   id             String                 @id @default(cuid())
-  testId         String
-  name           String
+  testId         String?
+  name           String?
   description    String?
-  totalQuestions Int                    @default(0)
+  totalQuestions Int?                   @default(0)
   order          Int?
-  createdAt      DateTime               @default(now())
-  updatedAt      DateTime               @updatedAt
+  roundTitle     String?
+  type           String?                @default("assessment")
   questions      Question[]
-  test           Test                   @relation(fields: [testId], references: [id], onDelete: Cascade)
+  test           Test?                  @relation(fields: [testId], references: [id], onDelete: Cascade)
   progress       UserSubtopicProgress[]
 }
 
@@ -179,7 +182,8 @@ model MonitoringEvent {
   details       String?
   testType      String?
   userId        String
-  violationType String
+  violationType String?
+  eventType     String
   result        Result?  @relation(fields: [resultId], references: [id], onDelete: Cascade)
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -305,10 +309,23 @@ model Submissions {
   id        String   @id @default(cuid())
   problemId Int
   userId    String
-  code      String
+  code      String   @db.Text
   language  String
   status    String
+  problem   Problem  @relation(fields:[problemId],references:[id])
+  user      User     @relation("userSubmissions", fields:[userId],references:[id])
   createdAt DateTime @default(now())
-  problem   Problem  @relation(fields: [problemId], references: [id])
-  user      User     @relation(fields: [userId], references: [id])
+}
+
+model TestEligibility {
+  id         String   @id
+  userId     String
+  testId     String
+  isEligible Boolean  @default(false)
+  criteria   Json?
+  checkedAt  DateTime @default(now())
+  Test       Test     @relation(fields: [testId], references: [id], onDelete: Cascade)
+  user       User     @relation("userTestEligibilities", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, testId])
 }
