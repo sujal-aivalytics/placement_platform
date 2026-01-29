@@ -22,11 +22,7 @@ import {
   HelpCircle,
   MonitorPlay,
   AudioLines,
-  FileText, // Resume Simulator icon
-  Brain, // Added
-  Briefcase, // Added
-  Building2, // Added
-  ClipboardList // Added
+
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -101,6 +97,7 @@ const SidebarContent = ({
     { href: "/dashboard/topics", label: "Topics", icon: BookOpen },
     { href: "/dashboard/mock-tests", label: "Mock Tests", icon: MonitorPlay },
     { href: "/dashboard/results", label: "Results", icon: BarChart3 },
+    { href: "/dashboard/programming", label: "Programming", icon: Code },
     { href: "/dashboard/profile", label: "Settings", icon: Settings },
   ];
 
