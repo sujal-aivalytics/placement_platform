@@ -41,6 +41,8 @@ export default function NewTestPage() {
         topic: formData.type === 'topic' ? formData.topicOrCompany : undefined,
       };
 
+      console.log('Creating test with payload:', payload);
+
       const res = await fetch('/api/tests', {
         method: 'POST',
         headers: {
@@ -49,13 +51,35 @@ export default function NewTestPage() {
         body: JSON.stringify(payload),
       });
 
+      console.log('Response status:', res.status, res.statusText);
+
       if (res.ok) {
+        const data = await res.json();
+        console.log('Test created successfully:', data);
         router.push('/admin/tests');
         router.refresh();
       } else {
-        const errorData = await res.json();
-        const errorMessage = errorData.details || errorData.error || 'Failed to create test';
-        console.error('Failed to create test:', errorData);
+        // Try to parse error response
+        let errorData;
+        let errorMessage = 'Failed to create test';
+        
+        try {
+          const text = await res.text();
+          console.log('Error response text:', text);
+          
+          if (text) {
+            errorData = JSON.parse(text);
+            errorMessage = errorData.details || errorData.error || errorMessage;
+            console.error('Failed to create test:', errorData);
+          } else {
+            console.error('Empty error response from server');
+            errorMessage = `Server returned ${res.status} with no error details`;
+          }
+        } catch (parseError) {
+          console.error('Failed to parse error response:', parseError);
+          errorMessage = `Server error (${res.status}): Unable to parse response`;
+        }
+        
         alert(`Failed to create test: ${errorMessage}`);
       }
     } catch (error) {

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { PlacementMCQTest } from '@/components/placements/placement-mcq-test';
 import { Loader2 } from 'lucide-react';
+import { parseJsonSafely } from '@/lib/fetch-utils';
 
 interface Question {
   id: string;
@@ -37,7 +38,7 @@ export default function SubtopicTestPage({
 
       // Fetch questions for this subtopic
       fetch(`/api/tests/${id}/subtopics/${subId}/questions`)
-        .then(res => res.json())
+        .then(parseJsonSafely)
         .then(data => {
           if (data.questions && data.questions.length > 0) {
             setQuestions(data.questions);

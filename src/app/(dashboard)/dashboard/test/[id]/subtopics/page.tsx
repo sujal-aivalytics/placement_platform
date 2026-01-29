@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, BookOpen, CheckCircle2, Clock, ArrowLeft, Trophy } from "lucide-react";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { motion } from "framer-motion";
+import { parseJsonSafely } from "@/lib/fetch-utils";
 
 interface Subtopic {
   id: string;
@@ -57,7 +58,7 @@ export default function SubtopicsPage({ params }: { params: Promise<{ id: string
       setTestId(id);
       // Fetch test details
       fetch(`/api/tests?id=${id}`)
-        .then(res => res.json())
+        .then(parseJsonSafely)
         .then(data => {
           if (data.test) {
             setTest(data.test);
@@ -67,7 +68,7 @@ export default function SubtopicsPage({ params }: { params: Promise<{ id: string
 
       // Fetch subtopics
       fetch(`/api/tests/${id}/subtopics`)
-        .then(res => res.json())
+        .then(parseJsonSafely)
         .then(data => {
           if (data.subtopics) {
             setSubtopics(data.subtopics);

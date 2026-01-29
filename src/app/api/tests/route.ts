@@ -76,34 +76,42 @@ export async function POST(req: Request) {
 
         if (!title || !duration || !difficulty) {
             return NextResponse.json(
-                { error: 'Missing required fields' },
+                { error: 'Missing required fields', details: 'Title, duration, and difficulty are required' },
                 { status: 400 }
             );
         }
 
-        // Create test with questions
+        console.log('Creating test:', { title, type, hasQuestions: !!questions?.length });
+
+        // Create test - handle questions separately to avoid timeout
+        const testData: any = {
+            title,
+            description: description || '',
+            duration: parseInt(duration),
+            difficulty,
+            type: type || 'topic',
+            company: company || null,
+            topic: topic || null,
+        };
+
+        // Only add questions if they exist and are not empty
+        if (questions && Array.isArray(questions) && questions.length > 0) {
+            testData.questions = {
+                create: questions.map((q: { text: string; type?: string; options: Array<{ text: string; isCorrect: boolean }> }) => ({
+                    text: q.text,
+                    type: q.type || 'multiple-choice',
+                    options: {
+                        create: q.options?.map((opt: { text: string; isCorrect: boolean }) => ({
+                            text: opt.text,
+                            isCorrect: opt.isCorrect || false,
+                        })) || [],
+                    },
+                })),
+            };
+        }
+
         const test = await prisma.test.create({
-            data: {
-                title,
-                description,
-                duration: parseInt(duration),
-                difficulty,
-                type: type || 'topic',
-                company,
-                topic,
-                questions: {
-                    create: questions?.map((q: { text: string; type?: string; options: Array<{ text: string; isCorrect: boolean }> }) => ({
-                        text: q.text,
-                        type: q.type || 'multiple-choice',
-                        options: {
-                            create: q.options?.map((opt: { text: string; isCorrect: boolean }) => ({
-                                text: opt.text,
-                                isCorrect: opt.isCorrect || false,
-                            })),
-                        },
-                    })),
-                },
-            },
+            data: testData,
             include: {
                 questions: {
                     include: {
@@ -112,6 +120,8 @@ export async function POST(req: Request) {
                 },
             },
         });
+
+        console.log('Test created successfully:', test.id);
 
         return NextResponse.json(
             { message: 'Test created successfully', test },
@@ -122,7 +132,8 @@ export async function POST(req: Request) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         const errorDetails = process.env.NODE_ENV === 'development' ? {
             message: errorMessage,
-            stack: error instanceof Error ? error.stack : undefined
+            stack: error instanceof Error ? error.stack : undefined,
+            name: error instanceof Error ? error.name : undefined,
         } : undefined;
 
         return NextResponse.json(

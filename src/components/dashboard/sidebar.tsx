@@ -105,8 +105,6 @@ const SidebarContent = ({
   const adminLinks = [
     { href: "/admin", label: "Overview", icon: LayoutDashboard },
     { href: "/admin/mcq-generator", label: "MCQ Generator", icon: Brain },
-    { href: "/admin/placements", label: "Placements", icon: Briefcase },
-    { href: "/admin/placement-questions", label: "Questions", icon: FileQuestion },
     { href: "/admin/tests", label: "Tests", icon: GraduationCap },
     { href: "/admin/company-tests", label: "Company Tests", icon: Building2 },
     { href: "/admin/users", label: "Users", icon: Users },

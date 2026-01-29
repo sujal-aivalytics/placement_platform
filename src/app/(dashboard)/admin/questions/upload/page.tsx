@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Upload, FileText, CheckCircle, AlertCircle } from 'lucide-react';
+import { parseJsonSafely } from '@/lib/fetch-utils';
 
 interface Test {
   id: string;
@@ -25,7 +26,7 @@ export default function BulkUploadPage() {
   useEffect(() => {
     // Fetch tests for the dropdown
     fetch('/api/tests')
-      .then(res => res.json())
+      .then(parseJsonSafely)
       .then(data => {
         if (data.tests) {
           setTests(data.tests);

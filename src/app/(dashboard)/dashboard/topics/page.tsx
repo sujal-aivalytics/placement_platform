@@ -8,6 +8,7 @@ import { Loader2, BookOpen, HelpCircle, Code2, Calculator, BrainCircuit } from "
 import { PageHeader } from "@/components/dashboard/page-header";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
+import { parseJsonSafely } from "@/lib/fetch-utils";
 
 interface Test {
   id: string;
@@ -68,7 +69,7 @@ export default function TopicsPage() {
   useEffect(() => {
     // Fetch only topic/aptitude tests
     fetch('/api/tests?type=topic')
-      .then(res => res.json())
+      .then(parseJsonSafely)
       .then(data => {
         if (data.tests) {
           setTests(data.tests);

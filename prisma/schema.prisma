@@ -173,8 +173,9 @@ model Subtopic {
   description    String?
   totalQuestions Int      @default(0)
   order          Int?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  // Temporarily commented out until database is updated
+  // createdAt      DateTime @default(now())
+  // updatedAt      DateTime @updatedAt
 
   test                 Test @relation(fields: [testId], references: [id], onDelete: Cascade)
   questions            Question[]

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Trophy, TrendingUp, TrendingDown, ArrowLeft, RotateCcw, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
+import { parseJsonSafely } from "@/lib/fetch-utils";
 
 interface SubtopicProgress {
   id: string;
@@ -32,7 +33,7 @@ export default function TopicSummaryPage({ params }: { params: Promise<{ id: str
 
       // Fetch test details
       fetch(`/api/tests?id=${id}`)
-        .then(res => res.json())
+        .then(parseJsonSafely)
         .then(data => {
           if (data.test) {
             setTestTitle(data.test.title);
@@ -42,7 +43,7 @@ export default function TopicSummaryPage({ params }: { params: Promise<{ id: str
 
       // Fetch subtopics with progress
       fetch(`/api/tests/${id}/subtopics`)
-        .then(res => res.json())
+        .then(parseJsonSafely)
         .then(data => {
           if (data.subtopics) {
             setSubtopics(data.subtopics.filter((s: SubtopicProgress) => s.progress?.completed));
