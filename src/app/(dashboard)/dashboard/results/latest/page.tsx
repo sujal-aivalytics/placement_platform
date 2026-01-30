@@ -16,8 +16,6 @@ interface LocalTestResult {
   questions: Question[];
 }
 
-import { useParams } from "next/navigation";
-
 export default function ResultPage() {
   const [result, setResult] = useState<LocalTestResult | null>(null);
   const [feedback, setFeedback] = useState<string>('');

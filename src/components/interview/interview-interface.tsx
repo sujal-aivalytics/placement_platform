@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Mic, MicOff, Video, VideoOff, RotateCcw, Play, Pause, Volume2, VolumeX, Square } from 'lucide-react';
-import { generateQuestion, InterviewContext } from '@/app/actions/interview';
+import { generateQuestion } from '@/app/actions/interview';
+import { InterviewContext } from '@/lib/interview-ai';
 import { INTERVIEW_CONFIG, COMPANY_TYPES, INTERVIEW_TYPES } from '@/lib/interview-constants';
 import { useSession } from 'next-auth/react';
 

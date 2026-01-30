@@ -15,7 +15,7 @@ export default async function ExamLayout({
     params,
 }: {
     children: React.ReactNode;
-    params: { id: string };
+    params: Promise<{ id: string }>;
 }) {
     // Await params for Next.js 15 compatibility
     const { id } = await params;

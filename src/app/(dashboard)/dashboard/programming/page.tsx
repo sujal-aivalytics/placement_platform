@@ -3,12 +3,22 @@ import React from "react";
 import { Search, ListFilter, CheckCircle2, Circle, Trophy, Code2, ChevronRight, Hash } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 
+// Force dynamic rendering to avoid build-time database queries
+export const dynamic = 'force-dynamic';
+
 export default async function ProgrammingPage() {
-  const CodingProblems = await prisma.problem.findMany({
-    orderBy: {
-      id: 'asc'
-    }
-  });
+  let CodingProblems: any[] = [];
+  
+  try {
+    CodingProblems = await prisma.problem.findMany({
+      orderBy: {
+        id: 'asc'
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching problems:', error);
+    // Continue with empty array if table doesn't exist
+  }
 
   return (
     <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0a] p-6 md:p-12 transition-colors">

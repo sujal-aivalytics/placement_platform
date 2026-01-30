@@ -5,17 +5,11 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-<<<<<<< HEAD
-import { Loader2, Trophy, TrendingUp, TrendingDown, ArrowLeft, RotateCcw, CheckCircle2 } from "lucide-react";
-import { motion } from "framer-motion";
-import { parseJsonSafely } from "@/lib/fetch-utils";
-=======
 import {
   Loader2, Trophy, TrendingUp, TrendingDown,
   ArrowLeft, RotateCcw, Sparkles, BrainCircuit, ChevronRight
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
->>>>>>> f0dbe6d15135f773d29cddfa3dbed03eb5139cd1
 
 interface SubtopicProgress {
   id: string;
@@ -47,34 +41,10 @@ export default function TopicSummaryPage({ params }: { params: Promise<{ id: str
   useEffect(() => {
     params.then(({ id }) => {
       setTestId(id);
-<<<<<<< HEAD
-
-      // Fetch test details
-      fetch(`/api/tests?id=${id}`)
-        .then(parseJsonSafely)
-        .then(data => {
-          if (data.test) {
-            setTestTitle(data.test.title);
-          }
-        })
-        .catch(err => console.error('Failed to fetch test:', err));
-
-      // Fetch subtopics with progress
-      fetch(`/api/tests/${id}/subtopics`)
-        .then(parseJsonSafely)
-        .then(data => {
-          if (data.subtopics) {
-            setSubtopics(data.subtopics.filter((s: SubtopicProgress) => s.progress?.completed));
-          }
-        })
-        .catch(err => console.error('Failed to fetch subtopics:', err))
-        .finally(() => setLoading(false));
-=======
       fetch(`/api/tests?id=${id}`).then(res => res.json()).then(data => data.test && setTestTitle(data.test.title));
       fetch(`/api/tests/${id}/subtopics`).then(res => res.json()).then(data => {
         if (data.subtopics) setSubtopics(data.subtopics.filter((s: any) => s.progress?.completed));
       }).finally(() => setLoading(false));
->>>>>>> f0dbe6d15135f773d29cddfa3dbed03eb5139cd1
     });
   }, [params]);
 

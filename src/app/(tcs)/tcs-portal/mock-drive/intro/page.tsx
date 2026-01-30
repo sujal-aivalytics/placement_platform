@@ -15,6 +15,20 @@ export default function TCSMockDriveIntro() {
     const router = useRouter();
     const { data: session } = useSession();
     const [statusData, setStatusData] = useState<any>(null);
+    const [loading, setLoading] = useState(false);
+
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: { staggerChildren: 0.1 }
+        }
+    };
+
+    const itemVariants = {
+        hidden: { opacity: 0, y: 20 },
+        visible: { opacity: 1, y: 0 }
+    };
 
     useEffect(() => {
         async function loadStatus() {

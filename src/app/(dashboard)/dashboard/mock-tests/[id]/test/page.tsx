@@ -18,7 +18,6 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import Loader from "@/components/ui/loader"; // Assuming a Loader component exists, or I'll implement a simple one
 
 const LANGUAGES = [
     { id: "python", name: "Python", version: "3.10.0", fileExt: "py" },
