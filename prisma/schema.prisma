@@ -61,9 +61,9 @@ model User {
   placementApplications PlacementApplication[]
   results               Result[]
   sessions              Session[]
-  testEligibilities     TestEligibility[]     @relation("userTestEligibilities")
+  testEligibilities     TestEligibility[]      @relation("userTestEligibilities")
   subtopicProgress      UserSubtopicProgress[]
-  submissions           Submissions[]         @relation("userSubmissions")
+  submissions           Submissions[]          @relation("userSubmissions")
 }
 
 model VerificationToken {
@@ -75,70 +75,36 @@ model VerificationToken {
 }
 
 model Test {
-  id          String   @id @default(cuid())
-  title       String
-  description String?
-  duration    Int // in minutes
-  difficulty  String // Easy, Medium, Hard
-  type        String?  @default("topic") // "topic" or "company"
-  company     String?
-  topic       String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  eligibilityCriteria Json? // { tenthPercentage: 60, twelfthPercentage: 60, graduationCGPA: 6.0, backlogs: 0 }
-
-  questions        Question[]
-  results          Result[]
-  assignments      TestAssignment[]
-  assessmentStages AssessmentStage[]
-  subtopics        Subtopic[]
-  eligibilityRecords TestEligibility[]
+  id                  String            @id @default(cuid())
+  title               String
+  description         String?
+  duration            Int
+  difficulty          String
+  type                String?           @default("topic")
+  company             String?
+  topic               String?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  eligibilityCriteria Json?
+  questions           Question[]
+  results             Result[]
+  assignments         TestAssignment[]
+  assessmentStages    AssessmentStage[]
+  subtopics           Subtopic[]
+  eligibilityRecords  TestEligibility[]
 }
 
 model TestEligibility {
-  id        String   @id @default(cuid())
-  userId    String
-  testId    String
-  isEligible Boolean @default(false)
-  criteria  Json?    // Store what criteria was met/checked
-  checkedAt DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  test Test @relation(fields: [testId], references: [id], onDelete: Cascade)
+  id         String   @id @default(cuid())
+  userId     String
+  testId     String
+  isEligible Boolean  @default(false)
+  criteria   Json?
+  checkedAt  DateTime @default(now())
+  user       User     @relation("userTestEligibilities", fields: [userId], references: [id], onDelete: Cascade)
+  test       Test     @relation(fields: [testId], references: [id], onDelete: Cascade)
 
   @@unique([userId, testId])
-}
-
-model Subtopic {
-  id          String   @id @default(cuid())
-  name        String?
-  description String?
-  order       Int?
-  totalQuestions Int? @default(0) // Added field
-  roundTitle  String?  // Grouping title (e.g., "Online Assessment")
-  type        String?  @default("assessment") // assessment, coding, interview
-  
-  testId      String?
-  test        Test?    @relation(fields: [testId], references: [id], onDelete: Cascade)
-  
-  questions   Question[]
-  userProgress UserSubtopicProgress[]
-}
-
-model Question {
-  id         String    @id @default(cuid())
-  testId     String
-  subtopicId String?
-  text       String
-  type       String    @default("multiple-choice")
-  category   String?
-  difficulty String?
-  metadata   String?
-  order      Int?
-  subtopicId String?
-  options    Option[]
-  subtopic   Subtopic? @relation(fields: [subtopicId], references: [id])
-  test       Test      @relation(fields: [testId], references: [id], onDelete: Cascade)
 }
 
 model Subtopic {
@@ -155,6 +121,21 @@ model Subtopic {
   progress       UserSubtopicProgress[]
 }
 
+model Question {
+  id         String    @id @default(cuid())
+  testId     String
+  subtopicId String?
+  text       String
+  type       String    @default("multiple-choice")
+  category   String?
+  difficulty String?
+  metadata   String?
+  order      Int?
+  options    Option[]
+  subtopic   Subtopic? @relation(fields: [subtopicId], references: [id])
+  test       Test      @relation(fields: [testId], references: [id], onDelete: Cascade)
+}
+
 model Option {
   id         String   @id @default(cuid())
   questionId String
@@ -169,8 +150,8 @@ model Result {
   testId           String
   score            Int
   total            Int
-  aiFeedback       String?           @db.Text // AI-generated feedback from Gemini
-  details          Json?             // Detailed question-wise analysis
+  aiFeedback       String?           @db.Text
+  details          Json?
   createdAt        DateTime          @default(now())
   monitoringEvents MonitoringEvent[]
   test             Test              @relation(fields: [testId], references: [id], onDelete: Cascade)
@@ -213,16 +194,12 @@ model TestAssignment {
 model MonitoringEvent {
   id            String   @id @default(cuid())
   userId        String
+  resultId      String?
   testType      String?
-  eventType     String // Added field
-  violationType String? // Made optional if eventType supercedes it
+  eventType     String
+  violationType String?
   details       String?
   timestamp     DateTime @default(now())
-  details       String?
-  testType      String?
-  userId        String
-  violationType String?
-  eventType     String
   result        Result?  @relation(fields: [resultId], references: [id], onDelete: Cascade)
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -253,20 +230,15 @@ model VoiceAssessment {
   pronunciationScore Float?
   paceScore          Float?
   clarityScore       Float?
-  totalScore         Float? // Renamed to match code usage
-  // Meta
-  confidenceScore Float?
-  status          String? @default("PENDING") // Using String for flexibility: PASSED, FAILED, HUMAN_REVIEW_PENDING
-  reviewType      String? @default("AI_ONLY") // AI_ONLY, HUMAN_VERIFIED
+  totalScore         Float?
+  confidenceScore    Float?
+  status             String?              @default("PENDING")
+  reviewType         String?              @default("AI_ONLY")
   isPassed           Boolean              @default(false)
   feedback           String?
+  aiFeedback         Json?
   assessedAt         DateTime?
   createdAt          DateTime             @default(now())
-  aiFeedback         Json?
-  confidenceScore    Float?
-  reviewType         String?              @default("AI_ONLY")
-  status             String?              @default("PENDING")
-  totalScore         Float?
   application        PlacementApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
 }
 
@@ -356,20 +328,7 @@ model Submissions {
   code      String   @db.Text
   language  String
   status    String
-  problem   Problem  @relation(fields:[problemId],references:[id])
-  user      User     @relation("userSubmissions", fields:[userId],references:[id])
+  problem   Problem  @relation(fields: [problemId], references: [id])
+  user      User     @relation("userSubmissions", fields: [userId], references: [id])
   createdAt DateTime @default(now())
-}
-
-model TestEligibility {
-  id         String   @id
-  userId     String
-  testId     String
-  isEligible Boolean  @default(false)
-  criteria   Json?
-  checkedAt  DateTime @default(now())
-  Test       Test     @relation(fields: [testId], references: [id], onDelete: Cascade)
-  user       User     @relation("userTestEligibilities", fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, testId])
 }

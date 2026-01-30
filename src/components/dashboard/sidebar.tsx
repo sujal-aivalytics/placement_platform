@@ -26,7 +26,6 @@ import {
   FileText,
   Code,
   Brain,
-  Building2,
   User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -110,7 +109,7 @@ const SidebarContent = ({
     { href: "/admin", label: "Overview", icon: LayoutDashboard },
     { href: "/admin/mcq-generator", label: "MCQ Generator", icon: Brain },
     { href: "/admin/tests", label: "Tests", icon: GraduationCap },
-    { href: "/admin/company-tests", label: "Company Tests", icon: Building2 },
+    { href: "/admin/subtopics", label: "Subtopics", icon: BookOpen },
     { href: "/admin/users", label: "Users", icon: Users },
     { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
     { href: "/dashboard/profile", label: "Settings", icon: Settings },
