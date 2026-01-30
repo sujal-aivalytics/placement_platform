@@ -92,7 +92,22 @@ export async function POST(
         }
 
         const { id: testId } = await params;
-        const { name, description, order } = await req.json();
+
+        if (!testId) {
+            return NextResponse.json(
+                { error: 'Test ID is required' },
+                { status: 400 }
+            );
+        }
+
+        const { name, description, order, roundTitle, type } = await req.json();
+
+        if (!name) {
+            return NextResponse.json(
+                { error: 'Subtopic name is required' },
+                { status: 400 }
+            );
+        }
 
         // Verify test exists
         const test = await prisma.test.findUnique({
@@ -113,6 +128,8 @@ export async function POST(
                 name,
                 description,
                 order,
+                roundTitle,
+                type,
                 totalQuestions: 0,
             },
         });
