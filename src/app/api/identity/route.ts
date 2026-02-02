@@ -14,24 +14,15 @@ export async function GET(_req: Request) {
             );
         }
 
-        // In development mode, auto-verify authenticated users
-        // In production, this would check actual identity verification status
-        // from a database or external service
-        const isDevMode = process.env.NODE_ENV === 'development' ||
-            process.env.NEXT_PUBLIC_DEV_ID_VERIFY === 'true';
-
-        if (isDevMode) {
-            // Auto-verify in development mode for authenticated users
-            return NextResponse.json({
-                status: 'verified',
-                reason: null,
-            });
-        }
-
-        // In production, return pending until actual verification is done
+        // For now, auto-verify all authenticated users
         return NextResponse.json({
-            status: 'pending',
-            reason: 'Identity verification required. Please complete verification to proceed.',
+            status: 'verified',
+            reason: null,
+            user: {
+                name: session.user.name,
+                email: session.user.email,
+                image: session.user.image
+            }
         });
     } catch (error) {
         console.error('Identity status fetch error:', error);

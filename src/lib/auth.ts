@@ -60,15 +60,7 @@ export const authOptions: NextAuthOptions = {
                     };
                     console.error('❌ Authorization error details:', errorDetails);
 
-                    // Direct file logging
-                    try {
-                        const fs = require('fs');
-                        const path = require('path');
-                        const logFile = path.join(process.cwd(), 'auth_debug.log');
-                        fs.appendFileSync(logFile, JSON.stringify(errorDetails, null, 2) + '\n');
-                    } catch (fsError) {
-                        console.error('Failed to write to log file', fsError);
-                    }
+                    console.error('❌ Authorization error details:', errorDetails);
 
                     // Return null to trigger CredentialsSignin error
                     return null;
