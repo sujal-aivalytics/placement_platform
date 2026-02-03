@@ -4,10 +4,12 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Loader2, BookOpen, HelpCircle, Code2, Calculator, BrainCircuit } from "lucide-react";
+import { Spinner } from "@/components/ui/loader";
+import { BookOpen, HelpCircle, Code2, Calculator, BrainCircuit } from "lucide-react";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
+import { parseJsonSafely } from "@/lib/fetch-utils";
 
 interface Test {
   id: string;
@@ -68,7 +70,7 @@ export default function TopicsPage() {
   useEffect(() => {
     // Fetch only topic/aptitude tests
     fetch('/api/tests?type=topic')
-      .then(res => res.json())
+      .then(parseJsonSafely)
       .then(data => {
         if (data.tests) {
           setTests(data.tests);
@@ -81,7 +83,7 @@ export default function TopicsPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-[calc(100vh-200px)]">
-        <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
+        <Spinner size={40} className="text-emerald-600" />
       </div>
     );
   }

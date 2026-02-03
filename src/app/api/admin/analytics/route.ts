@@ -34,11 +34,11 @@ export async function GET() {
 
         // Calculate average scores for each user
         const topPerformersWithStats = topPerformers
-            .map(user => {
+            .map((user: any) => {
                 const totalTests = user.results.length;
                 const avgScore = totalTests > 0
                     ? Math.round(
-                        user.results.reduce((sum: number, result) => {
+                        user.results.reduce((sum: number, result: any) => {
                             const percentage = (result.score / result.total) * 100;
                             return sum + percentage;
                         }, 0) / totalTests
@@ -52,8 +52,8 @@ export async function GET() {
                     avgScore
                 };
             })
-            .filter(user => user.tests > 0)
-            .sort((a, b) => b.avgScore - a.avgScore)
+            .filter((user: any) => user.tests > 0)
+            .sort((a: any, b: any) => b.avgScore - a.avgScore)
             .slice(0, 10); // Top 10 performers
 
         // Get topic performance (for aptitude tests)
@@ -75,11 +75,11 @@ export async function GET() {
         });
 
         const topicPerformance = topicTests
-            .map(test => {
+            .map((test: any) => {
                 const totalAttempts = test.results.length;
                 const avgScore = totalAttempts > 0
                     ? Math.round(
-                        test.results.reduce((sum: number, result) => {
+                        test.results.reduce((sum: number, result: any) => {
                             const percentage = (result.score / result.total) * 100;
                             return sum + percentage;
                         }, 0) / totalAttempts
@@ -93,8 +93,8 @@ export async function GET() {
                     attempts: totalAttempts
                 };
             })
-            .filter(topic => topic.attempts > 0)
-            .sort((a, b) => b.attempts - a.attempts);
+            .filter((topic: any) => topic.attempts > 0)
+            .sort((a: any, b: any) => b.attempts - a.attempts);
 
         // Get company performance (for company tests)
         const companyTests = await prisma.test.findMany({
@@ -115,11 +115,11 @@ export async function GET() {
         });
 
         const companyPerformance = companyTests
-            .map(test => {
+            .map((test: any) => {
                 const totalAttempts = test.results.length;
                 const avgScore = totalAttempts > 0
                     ? Math.round(
-                        test.results.reduce((sum: number, result) => {
+                        test.results.reduce((sum: number, result: any) => {
                             const percentage = (result.score / result.total) * 100;
                             return sum + percentage;
                         }, 0) / totalAttempts
@@ -133,8 +133,8 @@ export async function GET() {
                     attempts: totalAttempts
                 };
             })
-            .filter(company => company.attempts > 0)
-            .sort((a, b) => b.attempts - a.attempts);
+            .filter((company: any) => company.attempts > 0)
+            .sort((a: any, b: any) => b.attempts - a.attempts);
 
         return NextResponse.json({
             topPerformers: topPerformersWithStats,

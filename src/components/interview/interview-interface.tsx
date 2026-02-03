@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Mic, MicOff, Video, VideoOff, RotateCcw, Play, Pause, Volume2, VolumeX, Square } from 'lucide-react';
-import { generateQuestion, InterviewContext } from '@/app/actions/interview';
+import { generateQuestion } from '@/app/actions/interview';
+import { InterviewContext } from '@/lib/interview-ai';
 import { INTERVIEW_CONFIG, COMPANY_TYPES, INTERVIEW_TYPES } from '@/lib/interview-constants';
 import { useSession } from 'next-auth/react';
 
@@ -45,6 +46,7 @@ export default function InterviewInterface({ company, type }: InterviewInterface
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const recognitionRef = useRef<any>(null);
+  const startTimeRef = useRef<number>(0);
 
   // Initialize interview
   useEffect(() => {
@@ -206,6 +208,7 @@ export default function InterviewInterface({ company, type }: InterviewInterface
 
     setIsInterviewActive(true);
     setInterviewStarted(true);
+    startTimeRef.current = Date.now();
     setIsProcessing(true); // Show loading while fetching first question
 
     try {
@@ -324,7 +327,7 @@ export default function InterviewInterface({ company, type }: InterviewInterface
           questions,
           answers,
           transcript,
-          duration: 0, // Calculate actual duration if needed
+          duration: Math.round((Date.now() - (startTimeRef.current || Date.now())) / 1000),
         }),
       });
 

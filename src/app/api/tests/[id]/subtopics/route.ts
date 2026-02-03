@@ -2,66 +2,77 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { handlePrismaError } from '@/lib/prisma-errors';
 
-// GET subtopics for a test
+// GET - Fetch all subtopics for a test with user progress
 export async function GET(
     req: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const { id: testId } = await params;
+        const session = await getServerSession(authOptions);
 
-        if (!testId) {
+        if (!session?.user) {
             return NextResponse.json(
-                { error: 'Test ID is required' },
-                { status: 400 }
+                { error: 'Unauthorized' },
+                { status: 401 }
             );
         }
 
+        const { id: testId } = await params;
+
+        // Fetch all subtopics for this test
         const subtopics = await prisma.subtopic.findMany({
-            where: { testId },
+            where: {
+                testId: testId,
+            },
+            orderBy: {
+                order: 'asc',
+            },
             include: {
                 _count: {
                     select: {
                         questions: true,
                     },
                 },
-            },
-            orderBy: {
-                order: 'asc',
+                progress: {
+                    where: {
+                        userId: session.user.id,
+                    },
+                },
             },
         });
 
-        // Get user progress if authenticated
-        const session = await getServerSession(authOptions);
-        let userProgress: Record<string, any> = {};
+        // Transform the data to match the frontend interface
+        const transformedSubtopics = subtopics.map((subtopic: any) => {
+            const userProgress = subtopic.progress?.[0] || null;
 
-        if (session?.user?.id) {
-            const progress = await prisma.userSubtopicProgress.findMany({
-                where: {
-                    userId: session.user.id,
-                    subtopicId: {
-                        in: subtopics.map(s => s.id),
-                    },
-                },
-            });
+            return {
+                id: subtopic.id,
+                name: subtopic.name,
+                description: subtopic.description,
+                totalQuestions: subtopic._count.questions,
+                progress: userProgress
+                    ? {
+                        score: userProgress.score || 0,
+                        total: userProgress.total || 0,
+                        percentage: userProgress.percentage || 0,
+                        completed: userProgress.completed,
+                        attempted: userProgress.attempted,
+                    }
+                    : null,
+            };
+        });
 
-            userProgress = progress.reduce((acc, p) => {
-                acc[p.subtopicId] = p;
-                return acc;
-            }, {} as Record<string, any>);
-        }
-
-        const subtopicsWithProgress = subtopics.map(subtopic => ({
-            ...subtopic,
-            totalQuestions: subtopic._count.questions,
-            progress: userProgress[subtopic.id] || null,
-        }));
-
-        return NextResponse.json({ subtopics: subtopicsWithProgress });
+        return NextResponse.json(
+            { subtopics: transformedSubtopics },
+            { status: 200 }
+        );
     } catch (error) {
-        return handlePrismaError(error, 'Subtopics fetch');
+        console.error('Error fetching subtopics:', error);
+        return NextResponse.json(
+            { error: 'Internal server error', subtopics: [] },
+            { status: 500 }
+        );
     }
 }
 
@@ -89,7 +100,7 @@ export async function POST(
             );
         }
 
-        const { name, description, order } = await req.json();
+        const { name, description, order, roundTitle, type } = await req.json();
 
         if (!name) {
             return NextResponse.json(
@@ -98,12 +109,28 @@ export async function POST(
             );
         }
 
+        // Verify test exists
+        const test = await prisma.test.findUnique({
+            where: { id: testId },
+        });
+
+        if (!test) {
+            return NextResponse.json(
+                { error: 'Test not found' },
+                { status: 404 }
+            );
+        }
+
+        // Create the subtopic
         const subtopic = await prisma.subtopic.create({
             data: {
                 testId,
                 name,
                 description,
                 order,
+                roundTitle,
+                type,
+                totalQuestions: 0,
             },
         });
 
@@ -112,6 +139,10 @@ export async function POST(
             { status: 201 }
         );
     } catch (error) {
-        return handlePrismaError(error, 'Subtopic creation');
+        console.error('Subtopic creation error:', error);
+        return NextResponse.json(
+            { error: 'Internal server error' },
+            { status: 500 }
+        );
     }
 }

@@ -5,9 +5,11 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, BookOpen, CheckCircle2, Clock, ArrowLeft, Trophy } from "lucide-react";
+import { Spinner } from "@/components/ui/loader";
+import { BookOpen, CheckCircle2, Clock, ArrowLeft, Trophy } from "lucide-react";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { motion } from "framer-motion";
+import { parseJsonSafely } from "@/lib/fetch-utils";
 
 interface Subtopic {
   id: string;
@@ -57,7 +59,7 @@ export default function SubtopicsPage({ params }: { params: Promise<{ id: string
       setTestId(id);
       // Fetch test details
       fetch(`/api/tests?id=${id}`)
-        .then(res => res.json())
+        .then(parseJsonSafely)
         .then(data => {
           if (data.test) {
             setTest(data.test);
@@ -67,7 +69,7 @@ export default function SubtopicsPage({ params }: { params: Promise<{ id: string
 
       // Fetch subtopics
       fetch(`/api/tests/${id}/subtopics`)
-        .then(res => res.json())
+        .then(parseJsonSafely)
         .then(data => {
           if (data.subtopics) {
             setSubtopics(data.subtopics);
@@ -109,7 +111,7 @@ export default function SubtopicsPage({ params }: { params: Promise<{ id: string
   if (loading) {
     return (
       <div className="flex justify-center items-center h-[calc(100vh-200px)]">
-        <Loader2 className="h-10 w-10 animate-spin text-emerald-600" />
+        <Spinner size={40} className="text-emerald-600" />
       </div>
     );
   }
@@ -132,7 +134,7 @@ export default function SubtopicsPage({ params }: { params: Promise<{ id: string
             Back to Topics
           </Button>
         </div>
-        
+
         <PageHeader
           title={test?.title || 'Select Subtopic'}
           description={test?.description || 'Choose a subtopic to practice'}
@@ -193,13 +195,12 @@ export default function SubtopicsPage({ params }: { params: Promise<{ id: string
               className="group flex flex-col border border-gray-100 shadow-sm hover:shadow-2xl transition-all duration-300 overflow-hidden bg-white rounded-3xl relative h-full"
             >
               {/* Status Indicator */}
-              <div className={`absolute top-0 left-0 w-full h-1.5 ${
-                subtopic.progress?.completed
+              <div className={`absolute top-0 left-0 w-full h-1.5 ${subtopic.progress?.completed
                   ? 'bg-green-500'
                   : subtopic.progress?.attempted
-                  ? 'bg-yellow-500'
-                  : 'bg-gray-300'
-              }`} />
+                    ? 'bg-yellow-500'
+                    : 'bg-gray-300'
+                }`} />
 
               <CardContent className="p-6 flex flex-col h-full">
                 <div className="flex items-start justify-between mb-4">

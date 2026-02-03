@@ -18,7 +18,9 @@ const pool = globalForPrisma.pool ?? new Pool({
     connectionString: process.env.DATABASE_URL, // runtime pooler (correct)
     max: 20,
     idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 10000,
+    connectionTimeoutMillis: 30000, // Increased from 10s to 30s
+    statement_timeout: 30000, // Add statement timeout
+    query_timeout: 30000, // Add query timeout
 })
 
 // Add pool error handler
@@ -41,10 +43,36 @@ if (process.env.NODE_ENV !== 'production') {
     globalForPrisma.pool = pool
 }
 
+// Connection health check function
+export async function checkDatabaseConnection() {
+    try {
+        await prisma.$queryRaw`SELECT 1`
+        return true
+    } catch (error) {
+        console.error('❌ Database health check failed:', error)
+        return false
+    }
+}
+
 // Test connection on initialization
 if (process.env.NODE_ENV === 'development') {
     prisma.$connect()
         .then(() => console.log('✅ Database connected successfully'))
-        .catch((err) => console.error('❌ Database connection failed:', err))
+        .catch((err) => {
+            console.error('❌ Database connection failed:', err)
+            // Try to reconnect after a delay
+            setTimeout(() => {
+                console.log('🔄 Attempting to reconnect to database...')
+                prisma.$connect()
+                    .then(() => console.log('✅ Database reconnected successfully'))
+                    .catch((retryErr) => console.error('❌ Database reconnection failed:', retryErr))
+            }, 5000)
+        })
 }
+
+// Graceful shutdown
+process.on('beforeExit', async () => {
+    await prisma.$disconnect()
+    await pool.end()
+})
 

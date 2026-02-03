@@ -6,8 +6,9 @@ import { PerformanceChart } from "@/components/admin/performance-chart";
 import { RecentStudentsTable } from "@/components/admin/recent-students-table";
 import { getDashboardStats } from "@/lib/admin-stats";
 import { Calendar } from "@/components/ui/calendar";
-import { Bell, Search, Settings, Activity, UserPlus, FileText } from "lucide-react";
+import { Bell, Search, Settings, Activity, UserPlus, FileText, BookOpen, Upload, ArrowRight } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import Link from "next/link";
 
 export default async function AdminDashboard() {
   const session = await getServerSession(authOptions);
@@ -50,6 +51,42 @@ export default async function AdminDashboard() {
       <div>
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Overview</h2>
         <DashboardStats stats={data} />
+      </div>
+
+      {/* Quick Actions */}
+      <div>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Link href="/admin/subtopics" className="group">
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 transition-all duration-200 hover:scale-105 hover:shadow-lg border border-blue-100">
+              <div className="flex items-start justify-between mb-4">
+                <div className="p-3 rounded-xl bg-white shadow-sm text-blue-600">
+                  <BookOpen className="w-6 h-6" />
+                </div>
+                <ArrowRight className="w-5 h-5 text-blue-400 group-hover:translate-x-1 transition-transform" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Manage Subtopics</h3>
+                <p className="text-sm text-gray-600">Create and organize subtopics for your tests</p>
+              </div>
+            </div>
+          </Link>
+          
+          <Link href="/admin/subtopics" className="group">
+            <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 transition-all duration-200 hover:scale-105 hover:shadow-lg border border-purple-100">
+              <div className="flex items-start justify-between mb-4">
+                <div className="p-3 rounded-xl bg-white shadow-sm text-purple-600">
+                  <Upload className="w-6 h-6" />
+                </div>
+                <ArrowRight className="w-5 h-5 text-purple-400 group-hover:translate-x-1 transition-transform" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Upload Questions</h3>
+                <p className="text-sm text-gray-600">Bulk upload questions via CSV files</p>
+              </div>
+            </div>
+          </Link>
+        </div>
       </div>
 
         {/* Recent Activity (Takes 2 Columns) */}

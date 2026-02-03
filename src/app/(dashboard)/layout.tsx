@@ -24,10 +24,13 @@ export default function DashboardLayout({
             {/* Sidebar - Fixed on desktop, sliding on mobile under layout control */}
             {!isTestPage && (
                 <Sidebar
+                    mobileOpen={mobileOpen}
                     setMobileOpen={setMobileOpen}
                     collapsed={collapsed}
                     setCollapsed={setCollapsed}
+                    setCollapsed={setCollapsed}
                     role={session?.user?.role}
+                    user={session?.user}
                 />
             )}
 

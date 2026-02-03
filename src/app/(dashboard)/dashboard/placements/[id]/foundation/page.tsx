@@ -4,7 +4,8 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { PlacementMCQTest } from '@/components/placements/placement-mcq-test';
 import { fetchPlacementQuestions } from '@/lib/placement-questions';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { Spinner } from "@/components/ui/loader";
+import { AlertCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 
 interface Question {
@@ -37,7 +38,7 @@ export default function TCSFoundationTestPage() {
       }
       const appData = await appRes.json();
       setApplication(appData);
-      
+
       // Check if already completed this stage
       const foundationStage = appData.assessmentStages?.find(
         (s: { stageName: string; submittedAt?: string | Date }) => s.stageName === 'foundation'
@@ -101,7 +102,7 @@ export default function TCSFoundationTestPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+        <Spinner size={32} className="text-blue-600" />
       </div>
     );
   }
@@ -134,7 +135,7 @@ export default function TCSFoundationTestPage() {
               <AlertCircle className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
               <h2 className="text-2xl font-bold text-gray-900 mb-2">No Questions Available</h2>
               <p className="text-gray-600">
-                Questions for this test have not been uploaded yet. Please contact the administrator.
+                Questions for this test have not been uploaded yet. Please contact the istrator.
               </p>
             </div>
           </CardContent>
