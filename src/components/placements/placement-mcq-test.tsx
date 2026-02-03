@@ -54,6 +54,7 @@ export function PlacementMCQTest({
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [identityStatus, setIdentityStatus] = useState<IdentityStatus>('loading');
   const [identityReason, setIdentityReason] = useState<string | null>(null);
+  const [verifiedUser, setVerifiedUser] = useState<{ name?: string | null; email?: string | null; image?: string | null } | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [violation, setViolation] = useState<string | null>(null);
   const [examStarted, setExamStarted] = useState(false);
@@ -186,6 +187,9 @@ export function PlacementMCQTest({
       const data = await res.json();
       setIdentityStatus(data.status ?? 'pending');
       setIdentityReason(data.reason ?? null);
+      if (data.user) {
+        setVerifiedUser(data.user);
+      }
     } catch (err) {
       console.error('Identity status error:', err);
       setIdentityStatus('failed');
@@ -219,6 +223,9 @@ export function PlacementMCQTest({
       const data = await res.json();
       setIdentityStatus(data.status ?? 'verified');
       setIdentityReason(null);
+      if (data.user) {
+        setVerifiedUser(data.user);
+      }
     } catch (err) {
       console.error('Force verify error:', err);
       setIdentityStatus('failed');
@@ -437,7 +444,7 @@ export function PlacementMCQTest({
               <StatusTile
                 title="Identity verification"
                 status={identityStatus === 'verified' ? 'pass' : identityStatus === 'failed' ? 'fail' : 'pending'}
-                description={identityReason || 'We verify your account email before starting.'}
+                description={identityReason || (identityStatus === 'verified' ? 'Identity confirmed.' : 'We verify your account email before starting.')}
                 actions={
                   <div className="flex gap-2">
                     <Button size="sm" variant="outline" onClick={fetchIdentityStatus} disabled={identityStatus === 'loading'}>
@@ -450,7 +457,23 @@ export function PlacementMCQTest({
                     )}
                   </div>
                 }
-              />
+              >
+                {identityStatus === 'verified' && verifiedUser && (
+                  <div className="mt-3 flex items-center gap-3 p-2 bg-emerald-50 dark:bg-emerald-950/20 rounded-lg border border-emerald-100 dark:border-emerald-900/30">
+                    {verifiedUser.image ? (
+                      <img src={verifiedUser.image} alt={verifiedUser.name || 'User'} className="w-10 h-10 rounded-full" />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-800 flex items-center justify-center text-emerald-700 dark:text-emerald-200 font-bold">
+                        {verifiedUser.name?.[0] || verifiedUser.email?.[0] || '?'}
+                      </div>
+                    )}
+                    <div className="flex flex-col">
+                      <p className="text-sm font-semibold text-emerald-900 dark:text-emerald-100">{verifiedUser.name || 'Authenticated User'}</p>
+                      <p className="text-xs text-emerald-700/70 dark:text-emerald-300/60 truncate max-w-[150px]">{verifiedUser.email}</p>
+                    </div>
+                  </div>
+                )}
+              </StatusTile>
 
               <StatusTile
                 title="Full-screen lock"
