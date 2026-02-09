@@ -32,7 +32,7 @@ export async function POST(req: Request) {
       },
       update: {
         code: userCode,
-        status: status || "Pending", 
+        status: status , 
       },
       create: {
         userId: session.user.id,

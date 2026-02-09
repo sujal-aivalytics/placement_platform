@@ -124,6 +124,16 @@ export default function CodeWorkspace({ problem }: any) {
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
+    if(!results){
+      alert("Please Run Your Code");
+    }
+
+    const allPassed= results?.every((r:any)=>r.passed);
+    
+    const submssionstatus= allPassed ? "Accepted":"Pending";
+
+
+
     try {
       const res = await fetch("/api/problems/submit", {
         method: "POST",
@@ -132,6 +142,7 @@ export default function CodeWorkspace({ problem }: any) {
           problemId: problem.id, 
           userCode: code, 
           language, 
+          status:submssionstatus
         }),
       });
       const data = await res.json();
