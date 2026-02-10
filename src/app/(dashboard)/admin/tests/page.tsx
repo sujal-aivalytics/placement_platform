@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { Plus, GraduationCap, Trash2, FileEdit, BookOpen } from "lucide-react";
 import { useRouter } from 'next/navigation';
-import { Loader2 } from "lucide-react";
+import { Spinner } from "@/components/ui/loader";
 
 interface Test {
   id: string;
@@ -78,7 +78,7 @@ export default function TestsPage() {
           <h1 className="text-3xl font-bold tracking-tight">Tests</h1>
         </div>
         <div className="flex justify-center items-center h-[calc(100vh-200px)]">
-          <Loader2 className="h-10 w-10 animate-spin text-emerald-600" />
+          <Spinner size={40} className="text-emerald-600" />
         </div>
       </div>
     );
@@ -129,9 +129,9 @@ export default function TestsPage() {
                     className="w-full"
                     asChild
                   >
-                    <Link href={`/admin/tests/${test.id}/questions`}>
+                    <Link href={`/admin/tests/${test.id}`}>
                       <FileEdit className="mr-2 h-4 w-4" />
-                      Questions
+                      Manage
                     </Link>
                   </Button>
                   <Button

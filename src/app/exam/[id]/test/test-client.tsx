@@ -6,12 +6,13 @@ import { Button } from "@/components/ui/button";
 import { AudioMonitor } from "@/components/proctoring/audio-monitor";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { ChevronRight, ChevronLeft, Save, Flag, Clock, AlertTriangle, ListFilter, Terminal, Play, Send, CheckCircle2, UserCheck, Briefcase, Award, Home, Mic, Camera, ShieldCheck } from "lucide-react";
+import { ChevronRight, ChevronLeft, Save, Flag, Clock, AlertTriangle, ListFilter, Terminal, Play, Send, CheckCircle2, UserCheck, Briefcase, Award, Home, Mic, Camera, ShieldCheck, MonitorPlay } from "lucide-react";
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { useProctoring } from "@/hooks/use-proctoring";
 import { logMonitoringEvent } from "@/app/actions/monitoring";
 import { updateMockDriveProgress } from "@/app/actions/mock-drive";
+import { wrapCode, getStarterCode } from "@/lib/code-execution";
 import { toast } from "sonner";
 import {
     Select,
@@ -215,6 +216,13 @@ export default function TestRunnerClient({ test, session }: { test: any, session
     }, [isFullScreen, testStage]);
 
 
+    // --- Helper for Auto-Save ---
+    const saveCurrentState = useCallback(() => {
+        if (currentQuestion?.type === 'coding' || currentQuestion?.type === 'code') {
+            setAnswers(prev => ({ ...prev, [currentQuestion.id]: code }));
+        }
+    }, [currentQuestion, code]);
+
     // --- Timer Management ---
     useEffect(() => {
         if (!currentRound || testStage !== 'TEST') return;
@@ -372,7 +380,13 @@ export default function TestRunnerClient({ test, session }: { test: any, session
         setLanguage(val);
         if (!currentQuestion) return;
         if (!answers[currentQuestion.id]) {
-            setCode(DEFAULT_CODE[val] || "");
+            const metadata = getCodingMetadata(currentQuestion);
+            const starter = getStarterCode(val, {
+                functionName: metadata?.functionName,
+                inputStructure: metadata?.inputStructure || [],
+                outputType: metadata?.outputType
+            });
+            setCode(starter || DEFAULT_CODE[val] || "");
         }
     };
 
@@ -380,10 +394,21 @@ export default function TestRunnerClient({ test, session }: { test: any, session
     useEffect(() => {
         if (currentQuestion?.type === 'coding' || currentQuestion?.type === 'code') {
             const savedCode = answers[currentQuestion.id];
-            if (savedCode) setCode(savedCode);
-            else setCode(DEFAULT_CODE[language] || "");
+            if (savedCode) {
+                setCode(savedCode);
+            } else {
+                const metadata = getCodingMetadata(currentQuestion);
+                const starter = getStarterCode(language, {
+                    functionName: metadata?.functionName,
+                    inputStructure: metadata?.inputStructure || [],
+                    outputType: metadata?.outputType
+                });
+                setCode(starter || DEFAULT_CODE[language] || "");
+            }
         }
     }, [currentQuestion, answers, language]);
+
+    const [testCaseResults, setTestCaseResults] = useState<any[]>([]);
 
     const getCodingMetadata = (q: any) => {
         if (q?.type !== 'coding' || !q?.metadata) return null;
@@ -394,30 +419,80 @@ export default function TestRunnerClient({ test, session }: { test: any, session
         const metadata = getCodingMetadata(currentQuestion);
         if (!metadata?.testCases?.length) { toast.error("No test cases."); return; }
         setIsRunning(true);
-        setOutput("Compiling...");
+        setOutput("Running Test Cases...");
+        setTestCaseResults([]);
         setVerdict(null);
+
+        const langConfig = LANGUAGES.find(l => l.id === language);
+        let allPassed = true;
+        const results: any[] = [];
+
         try {
-            const langConfig = LANGUAGES.find(l => l.id === language);
-            const res = await fetch('https://emkc.org/api/v2/piston/execute', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    language: langConfig?.id, version: langConfig?.version,
-                    files: [{ content: code }], stdin: metadata.testCases[0].input
-                })
+            // Run sequentially to avoid rate limits or confusion
+            const wrappedCode = wrapCode(code, language, {
+                functionName: metadata.functionName,
+                inputStructure: metadata.inputStructure || []
             });
-            const data = await res.json();
-            if (data.run) {
-                const rawOutput = data.run.output?.trim();
-                setOutput(rawOutput || (data.run.stderr ? `Error:\n${data.run.stderr}` : "No Output"));
-                if (rawOutput == metadata.testCases[0].output?.trim()) {
-                    setVerdict("Passed"); toast.success("Passed!");
-                } else {
-                    setVerdict("Failed"); toast.error("Failed");
+
+            for (let i = 0; i < metadata.testCases.length; i++) {
+                const testCase = metadata.testCases[i];
+                try {
+                    const res = await fetch('https://emkc.org/api/v2/piston/execute', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            language: langConfig?.id, version: langConfig?.version,
+                            files: [{ content: wrappedCode }], stdin: testCase.input
+                        })
+                    });
+                    const data = await res.json();
+                    if (data.run) {
+                        const rawOutput = data.run.output?.trim();
+                        const expected = testCase.output?.trim();
+                        const passed = rawOutput === expected;
+
+                        if (!passed) allPassed = false;
+
+                        results.push({
+                            id: i,
+                            input: testCase.input,
+                            expected: expected,
+                            actual: rawOutput,
+                            stderr: data.run.stderr,
+                            passed
+                        });
+                    } else {
+                        allPassed = false;
+                        results.push({ id: i, error: "Execution Failed", passed: false });
+                    }
+                } catch (err) {
+                    allPassed = false;
+                    results.push({ id: i, error: "Connection Error", passed: false });
                 }
-            } else setOutput("Error");
-        } catch (e) { setOutput("Connection Failed"); }
-        finally { setIsRunning(false); }
+            }
+
+            setTestCaseResults(results);
+
+            if (allPassed) {
+                setVerdict("Passed");
+                toast.success("All Test Cases Passed!");
+            } else {
+                setVerdict("Failed");
+                toast.error("Some Test Cases Failed");
+            }
+
+            // Summary for the simple text output box (fallback)
+            const summary = results.map((r, i) =>
+                `Case ${i + 1}: ${r.passed ? 'PASSED' : 'FAILED'} ${r.stderr ? `(Error: ${r.stderr})` : ''}`
+            ).join('\n');
+            setOutput(summary);
+
+        } catch (e) {
+            setOutput("Execution Process Failed");
+            console.error(e);
+        } finally {
+            setIsRunning(false);
+        }
     };
 
     const saveCodingAnswer = () => {
@@ -425,7 +500,6 @@ export default function TestRunnerClient({ test, session }: { test: any, session
         setAnswers(prev => ({ ...prev, [currentQuestion.id]: code }));
         toast.success("Saved");
     };
-
 
     const formatTime = (seconds: number) => {
         const h = Math.floor(seconds / 3600);
@@ -440,6 +514,9 @@ export default function TestRunnerClient({ test, session }: { test: any, session
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
             stream.getTracks().forEach(track => track.stop()); // Just check permissions
+
+
+            // Error Overlay (Permissions)
             setCameraPermission(true);
             setMicPermission(true);
 
@@ -463,7 +540,7 @@ export default function TestRunnerClient({ test, session }: { test: any, session
 
     if (loading) return (
         <div className="flex items-center justify-center h-screen">
-            <Spinner size={40} className="text-emerald-600" />
+            <Spinner size={24} className="text-emerald-600" />
         </div>
     );
 
@@ -563,7 +640,10 @@ export default function TestRunnerClient({ test, session }: { test: any, session
                             Proceed to Next Round (Dashboard)
                         </Button>
                     ) : (
-                        <Button onClick={() => submitTest("Completed")} className="w-full bg-green-600 text-white">
+                        <Button onClick={() => {
+                            saveCurrentState();
+                            submitTest("Completed");
+                        }} className="w-full bg-green-600 text-white">
                             View Final Result
                         </Button>
                     )}
@@ -574,6 +654,17 @@ export default function TestRunnerClient({ test, session }: { test: any, session
 
     // Empty Fallback
     if (!currentRound) return <div>No rounds loaded.</div>;
+
+
+
+    const handleNext = () => {
+        saveCurrentState();
+        if (currentQuestionIndex < activeQuestions.length - 1) {
+            setCurrentQuestionIndex(prev => prev + 1);
+        } else {
+            handleNextSection();
+        }
+    };
 
     return (
         <div className="flex flex-col h-[calc(100vh-64px)] overflow-hidden select-none bg-gray-50">
@@ -614,8 +705,8 @@ export default function TestRunnerClient({ test, session }: { test: any, session
                         <Clock className="w-4 h-4 md:w-5 md:h-5" />
                         {formatTime(timeLeft)}
                     </div>
-                    <Button variant="default" className="bg-[#181C2E] hover:bg-gray-800 h-8 md:h-10 text-xs md:text-sm px-2 md:px-4" size="sm" onClick={handleNextSection}>
-                        {activeSectionIndex === currentRound.sections.length - 1 ? 'Finish' : 'Next'}
+                    <Button variant="default" className="bg-[#181C2E] hover:bg-gray-800 h-8 md:h-10 text-xs md:text-sm px-2 md:px-4" size="sm" onClick={handleNext}>
+                        {activeSectionIndex === currentRound.sections.length - 1 && currentQuestionIndex === activeQuestions.length - 1 ? 'Finish' : 'Next'}
                     </Button>
                 </div>
             </div>
@@ -634,13 +725,90 @@ export default function TestRunnerClient({ test, session }: { test: any, session
                         </div>
                     ) : isCoding ? (
 
+
                         (() => {
                             const metadata = getCodingMetadata(currentQuestion);
                             return (
                                 <div className="flex flex-col md:flex-row w-full h-full">
-                                    <div className="w-full md:w-1/3 h-[30%] md:h-full bg-white border-b md:border-b-0 md:border-r p-4 md:p-6 overflow-y-auto shrink-0">
-                                        <h1 className="text-lg md:text-xl font-bold mb-4">{currentQuestion?.text}</h1>
-                                        {metadata && <div className="space-y-4 text-xs md:text-sm"><p><strong>Input:</strong> {metadata.inputFormat}</p><p><strong>Output:</strong> {metadata.outputFormat}</p></div>}
+                                    <div className="w-full md:w-1/3 h-[30%] md:h-full bg-white border-b md:border-b-0 md:border-r flex flex-col shrink-0">
+                                        <div className="p-4 md:p-6 border-b">
+                                            <h1 className="text-lg md:text-xl font-bold">{currentQuestion?.text}</h1>
+                                        </div>
+                                        <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
+                                            {metadata && (
+                                                <div className="space-y-4 text-xs md:text-sm">
+                                                    <div>
+                                                        <h3 className="font-semibold text-gray-900 mb-1">Input Format</h3>
+                                                        <p className="text-gray-600 bg-gray-50 p-2 rounded border">{metadata.inputFormat}</p>
+                                                    </div>
+                                                    <div>
+                                                        <h3 className="font-semibold text-gray-900 mb-1">Output Format</h3>
+                                                        <p className="text-gray-600 bg-gray-50 p-2 rounded border">{metadata.outputFormat}</p>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Test Cases Display */}
+                                            <div>
+                                                <h3 className="font-bold text-gray-900 mb-3 flex items-center justify-between">
+                                                    Test Cases
+                                                    {testCaseResults.length > 0 && (
+                                                        <span className={`text-xs px-2 py-0.5 rounded-full ${verdict === 'Passed' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                                            {verdict === 'Passed' ? 'All Passed' : 'Some Failed'}
+                                                        </span>
+                                                    )}
+                                                </h3>
+                                                <div className="space-y-3">
+                                                    {testCaseResults.length > 0 ? (
+                                                        testCaseResults.map((res: any, idx: number) => (
+                                                            <div key={idx} className={`p-3 rounded-lg border text-xs ${res.passed ? 'bg-green-50/50 border-green-200' : 'bg-red-50/50 border-red-200'}`}>
+                                                                <div className="flex items-center justify-between mb-2">
+                                                                    <span className="font-medium text-gray-700">Case {idx + 1}</span>
+                                                                    {res.passed ? (
+                                                                        <span className="flex items-center gap-1 text-green-600"><CheckCircle2 className="w-3 h-3" /> Passed</span>
+                                                                    ) : (
+                                                                        <span className="flex items-center gap-1 text-red-600"><AlertTriangle className="w-3 h-3" /> Failed</span>
+                                                                    )}
+                                                                </div>
+                                                                <div className="grid grid-cols-2 gap-2">
+                                                                    <div>
+                                                                        <span className="text-gray-500 block mb-0.5">Input</span>
+                                                                        <code className="block bg-white p-1.5 rounded border border-gray-100">{res.input}</code>
+                                                                    </div>
+                                                                    <div>
+                                                                        <span className="text-gray-500 block mb-0.5">Expected</span>
+                                                                        <code className="block bg-white p-1.5 rounded border border-gray-100">{res.expected}</code>
+                                                                    </div>
+                                                                    {!res.passed && (
+                                                                        <div className="col-span-2 mt-1">
+                                                                            <span className="text-red-500 block mb-0.5">Actual Output</span>
+                                                                            <code className="block bg-white p-1.5 rounded border border-red-100 text-red-700">{res.actual || "No Output"}</code>
+                                                                            {res.stderr && <code className="block mt-1 text-red-600 whitespace-pre-wrap">{res.stderr}</code>}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        ))
+                                                    ) : (
+                                                        metadata?.testCases?.map((tc: any, idx: number) => (
+                                                            <div key={idx} className="p-3 rounded-lg border border-gray-200 bg-gray-50/50 text-xs">
+                                                                <span className="font-medium text-gray-700 block mb-2">Case {idx + 1}</span>
+                                                                <div className="space-y-2">
+                                                                    <div>
+                                                                        <span className="text-gray-500 block mb-0.5">Input</span>
+                                                                        <code className="block bg-white p-1 rounded border border-gray-200">{tc.input}</code>
+                                                                    </div>
+                                                                    <div>
+                                                                        <span className="text-gray-500 block mb-0.5">Output</span>
+                                                                        <code className="block bg-white p-1 rounded border border-gray-200">{tc.output}</code>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        ))
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div className="flex-1 flex flex-col bg-[#1e1e1e] h-[70%] md:h-full">
                                         <div className="bg-[#2d2d2d] p-2 flex justify-between items-center bg-zinc-800 border-b border-zinc-700">
@@ -649,12 +817,14 @@ export default function TestRunnerClient({ test, session }: { test: any, session
                                                 <SelectContent>{LANGUAGES.map(l => <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>)}</SelectContent>
                                             </Select>
                                             <div className="flex gap-2">
-                                                <Button size="sm" className="bg-green-600 h-8 text-xs" onClick={runCode}>{isRunning ? '...' : 'Run'}</Button>
+                                                <Button size="sm" className="bg-green-600 h-8 text-xs" onClick={runCode}>{isRunning ? 'Running...' : 'Run Code'}</Button>
                                                 <Button size="sm" className="bg-blue-600 h-8 text-xs" onClick={saveCodingAnswer}>Save</Button>
                                             </div>
                                         </div>
                                         <textarea className="flex-1 bg-[#1e1e1e] text-gray-300 p-4 font-mono text-sm resize-none focus:outline-none" value={code} onChange={e => setCode(e.target.value)} spellCheck={false} />
-                                        <div className="h-24 md:h-32 bg-black text-gray-400 p-2 font-mono text-xs md:text-sm border-t border-gray-700 overflow-y-auto">{output}</div>
+                                        <div className="h-24 md:h-32 bg-black text-gray-400 p-2 font-mono text-xs md:text-sm border-t border-gray-700 overflow-y-auto">
+                                            <pre className="whitespace-pre-wrap">{output || "Console Output..."}</pre>
+                                        </div>
                                     </div>
                                 </div>
                             )

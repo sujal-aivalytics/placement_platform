@@ -312,31 +312,31 @@ export default function UserDashboard() {
 
                 <div className="h-[300px] w-full" style={{ minHeight: '300px', minWidth: '100px' }}>
                   {chartData.length > 0 && (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={chartData.length ? chartData : [{ name: 'T1', score: 0 }]} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                      <defs>
-                        <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.1} />
-                          <stop offset="95%" stopColor="#4f46e5" stopOpacity={0} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#f1f5f9" />
-                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} dy={10} />
-                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
-                      <Tooltip
-                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
-                      />
-                      <Area
-                        type="monotone"
-                        dataKey="score"
-                        stroke="#4f46e5"
-                        strokeWidth={3}
-                        fillOpacity={1}
-                        fill="url(#colorScore)"
-                        activeDot={{ r: 6, strokeWidth: 0, fill: '#4f46e5' }}
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={chartData.length ? chartData : [{ name: 'T1', score: 0 }]} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                        <defs>
+                          <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.1} />
+                            <stop offset="95%" stopColor="#4f46e5" stopOpacity={0} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#f1f5f9" />
+                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} dy={10} />
+                        <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} />
+                        <Tooltip
+                          contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
+                        />
+                        <Area
+                          type="monotone"
+                          dataKey="score"
+                          stroke="#4f46e5"
+                          strokeWidth={3}
+                          fillOpacity={1}
+                          fill="url(#colorScore)"
+                          activeDot={{ r: 6, strokeWidth: 0, fill: '#4f46e5' }}
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
                   )}
                 </div>
               </div>
@@ -363,12 +363,17 @@ export default function UserDashboard() {
                             <p className="text-sm text-slate-500">{test.date} &bull; {test.status}</p>
                           </div>
                         </div>
-                        <div className="text-right">
+                        <div className="text-right flex flex-col items-end gap-2">
                           <div className="text-lg font-bold text-slate-900">{test.score}%</div>
-                          {test.score >= 70 ? (
-                            <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">PASSED</span>
+                          {test.status === 'Done' ? (
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">PASSED</span>
+                              <Link href={`/exam/${test.id}/result`}>
+                                <Button size="sm" variant="outline" className="h-6 text-[10px] px-2 border-emerald-200 text-emerald-700 hover:bg-emerald-50">View Result</Button>
+                              </Link>
+                            </div>
                           ) : (
-                            <span className="text-xs font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded-full">AVG</span>
+                            <span className="text-xs font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded-full">{test.status}</span>
                           )}
                         </div>
                       </div>

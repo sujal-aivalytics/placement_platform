@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { UploadCloud, FileText, CheckCircle2, X, Loader2, AlertCircle } from "lucide-react";
+import { UploadCloud, FileText, CheckCircle2, X, AlertCircle } from "lucide-react";
+import { Spinner } from "@/components/ui/loader";
 import { useRouter } from "next/navigation";
 import { parseResumeWithGemini } from "@/actions/parse-resume";
 
@@ -184,7 +185,7 @@ export default function ResumeUploadModal({ isOpen, onClose, templateId }: Resum
                                             />
                                         </svg>
                                         <div className="absolute inset-0 flex items-center justify-center">
-                                            <Loader2 className="w-8 h-8 text-teal-600 animate-spin" />
+                                            <Spinner size={32} className="text-teal-600" />
                                         </div>
                                     </div>
                                     <h4 className="font-semibold text-slate-900 mb-2">Analyzing Resume</h4>

@@ -27,6 +27,7 @@ import {
   Code,
   Brain,
   User,
+  Briefcase,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -107,14 +108,16 @@ const SidebarContent = ({
   const userLinks = [
     { href: "/dashboard", label: "Home", icon: LayoutDashboard },
     { href: "/dashboard/topics", label: "Topics", icon: BookOpen },
-    { href: "/dashboard/mock-tests", label: "Mock Tests", icon: MonitorPlay },
+    // { href: "/dashboard/mock-tests", label: "Mock Tests", icon: MonitorPlay },
     { href: "/dashboard/interview-suite", label: "AI Interview", icon: Mic },
-    
+
     { href: "/dashboard/voice-assessment", label: "Voice", icon: AudioLines },
     { href: "/dashboard/programming", label: "Programming", icon: Code },
     { href: "/dashboard/resume-simulator", label: "Resume Simulator", icon: FileText },
     { href: "/dashboard/results", label: "Results", icon: BarChart3 },
     { href: "/dashboard/profile", label: "Profile", icon: User },
+    // New Mock Drive Link
+    { href: "/placement/mock-drives", label: "Mock Drives", icon: Briefcase },
   ];
 
   const adminLinks = [
@@ -123,7 +126,8 @@ const SidebarContent = ({
     { href: "/admin/problems", label: "Problems", icon: FileQuestion },
     { href: "/admin/tests", label: "Tests", icon: GraduationCap },
     { href: "/admin/subtopics", label: "Subtopics", icon: BookOpen },
-    { href: "/admin/mock-tests", label: "Manage Mock Tests", icon: MonitorPlay },
+    // { href: "/admin/mock-tests", label: "Manage Mock Tests", icon: MonitorPlay },
+    { href: "/admin/mock-drives", label: "Company Drives", icon: Briefcase },
     { href: "/admin/users", label: "Users", icon: Users },
     { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
     { href: "/dashboard/profile", label: "Settings", icon: Settings },
