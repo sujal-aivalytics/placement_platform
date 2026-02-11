@@ -1,0 +1,13 @@
+
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
+
+async function main() {
+    const q = await prisma.mockQuestion.findFirst({
+        where: { type: 'CODING' }
+    });
+    console.log(JSON.stringify(q, null, 2));
+    process.exit(0);
+}
+
+main();

@@ -4,11 +4,12 @@ import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Editor from '@monaco-editor/react';
 import { Panel, Group, Separator } from "react-resizable-panels";
-import { 
-  Play, Send, ChevronLeft, Sun, Moon, Terminal, 
-  CheckCircle2, XCircle, Code2, BookOpen, AlertCircle, 
-  Lock, Trophy, ListChecks, Timer as TimerIcon, Layers, Loader2
+import {
+  Play, Send, ChevronLeft, Sun, Moon, Terminal,
+  CheckCircle2, XCircle, Code2, BookOpen, AlertCircle,
+  Lock, Trophy, ListChecks, Timer as TimerIcon, Layers
 } from 'lucide-react';
+import { Spinner } from "@/components/ui/loader";
 import { LANGUAGES, LangaugeKey } from '@/config/languages';
 import ReactMarkdown from 'react-markdown';
 
@@ -46,13 +47,13 @@ export default function CodeWorkspace({ problem }: any) {
       setIsLoadingCode(true);
       try {
         const res = await fetch(`/api/problems/saved?problemId=${problem.id}&language=${language}`);
-        
+
         if (res.ok) {
           const data = await res.json();
           if (data && data.code) {
             setCode(data.code);
             setIsLoadingCode(false);
-            return; 
+            return;
           }
         }
       } catch (err) {
@@ -66,10 +67,10 @@ export default function CodeWorkspace({ problem }: any) {
         return;
       }
 
-      const templates = typeof problem.starterTemplate === 'string' 
-        ? JSON.parse(problem.starterTemplate) 
+      const templates = typeof problem.starterTemplate === 'string'
+        ? JSON.parse(problem.starterTemplate)
         : problem.starterTemplate;
-        
+
       setCode(templates?.[language] || "");
       setIsLoadingCode(false);
     };
@@ -97,11 +98,11 @@ export default function CodeWorkspace({ problem }: any) {
       const res = await fetch("/api/problems/run", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          problemId: problem.id, 
-          userCode: code, 
-          language, 
-          languageId: LANGUAGES[language].judge0_id 
+        body: JSON.stringify({
+          problemId: problem.id,
+          userCode: code,
+          language,
+          languageId: LANGUAGES[language].judge0_id
         }),
       });
       const data = await res.json();
@@ -109,11 +110,11 @@ export default function CodeWorkspace({ problem }: any) {
         setResults(data.results);
         setExecutionMeta({ time: data.time, memory: data.memory, status: data.status });
       } else {
-        setExecutionMeta({ 
-            error: data.error || data.status?.description, 
-            compile_output: data.compile_output,
-            stderr: data.stderr,
-            status: data.status 
+        setExecutionMeta({
+          error: data.error || data.status?.description,
+          compile_output: data.compile_output,
+          stderr: data.stderr,
+          status: data.status
         });
       }
       setActiveTestCase(0);
@@ -124,25 +125,14 @@ export default function CodeWorkspace({ problem }: any) {
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    if(!results){
-      alert("Please Run Your Code");
-    }
-
-    const allPassed= results?.every((r:any)=>r.passed);
-    
-    const submssionstatus= allPassed ? "Accepted":"Pending";
-
-
-
     try {
       const res = await fetch("/api/problems/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          problemId: problem.id, 
-          userCode: code, 
-          language, 
-          status:submssionstatus
+        body: JSON.stringify({
+          problemId: problem.id,
+          userCode: code,
+          language,
         }),
       });
       const data = await res.json();
@@ -156,7 +146,7 @@ export default function CodeWorkspace({ problem }: any) {
     <div className="h-screen flex flex-col bg-white dark:bg-[#0a0a0a] transition-colors duration-300">
       <nav className="h-12 border-b flex items-center justify-between px-4 bg-white dark:bg-[#0d0d0d] border-zinc-200 dark:border-zinc-800 shadow-sm z-20 shrink-0">
         <div className="flex items-center gap-4">
-          <div 
+          <div
             onClick={() => router.back()}
             className="flex items-center gap-1.5 text-zinc-500 hover:text-zinc-900 dark:hover:text-white cursor-pointer group"
           >
@@ -185,7 +175,7 @@ export default function CodeWorkspace({ problem }: any) {
               <Play className={`w-3 h-3 ${isRunning ? 'animate-pulse' : 'text-emerald-500 fill-emerald-500'}`} />
               Run
             </button>
-            <button 
+            <button
               onClick={handleSubmit}
               disabled={isRunning || isSubmitting}
               className="flex items-center gap-2 px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-xs font-bold shadow-md active:scale-95 transition-all disabled:opacity-50"
@@ -205,7 +195,7 @@ export default function CodeWorkspace({ problem }: any) {
           <div className="flex items-center gap-2 px-6 py-2.5 border-b border-zinc-200 dark:border-zinc-800 text-[10px] font-black uppercase tracking-widest text-zinc-400 bg-zinc-50/50 dark:bg-zinc-900/30 shrink-0">
             <BookOpen className="w-3.5 h-3.5" /> Description
           </div>
-          
+
           <div className="flex-1 overflow-y-auto p-8 scrollbar-thin dark:scrollbar-thumb-zinc-800">
             <h1 className="text-2xl font-extrabold mb-4 text-zinc-900 dark:text-white tracking-tight">{problem.title}</h1>
             <div className="flex flex-wrap gap-2 mb-8">
@@ -217,38 +207,38 @@ export default function CodeWorkspace({ problem }: any) {
 
               {parsedData.examples.map((ex: any, i: number) => (
                 <div key={i} className="mt-6">
-                    <h4 className="text-xs font-bold text-zinc-900 dark:text-white mb-2 uppercase tracking-tighter">Example {i + 1}:</h4>
-                    <pre className="bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 text-xs font-mono whitespace-pre-wrap break-words overflow-hidden space-y-2">
-                        <div><span className="text-zinc-500 font-bold uppercase text-[10px]">Input:</span> <span className="text-zinc-800 dark:text-zinc-200">{ex.input}</span></div>
-                        <div><span className="text-zinc-500 font-bold uppercase text-[10px]">Output:</span> <span className="text-zinc-800 dark:text-zinc-200">{ex.output}</span></div>
-                        {ex.explanation && (
-                          <div className="mt-2 pt-2 border-t border-zinc-200 dark:border-zinc-800">
-                            <span className="text-zinc-500 font-bold uppercase text-[10px]">Explanation:</span> 
-                            <p className="mt-1 text-zinc-600 dark:text-zinc-400 italic leading-snug">{ex.explanation}</p>
-                          </div>
-                        )}
-                    </pre>
+                  <h4 className="text-xs font-bold text-zinc-900 dark:text-white mb-2 uppercase tracking-tighter">Example {i + 1}:</h4>
+                  <pre className="bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 text-xs font-mono whitespace-pre-wrap break-words overflow-hidden space-y-2">
+                    <div><span className="text-zinc-500 font-bold uppercase text-[10px]">Input:</span> <span className="text-zinc-800 dark:text-zinc-200">{ex.input}</span></div>
+                    <div><span className="text-zinc-500 font-bold uppercase text-[10px]">Output:</span> <span className="text-zinc-800 dark:text-zinc-200">{ex.output}</span></div>
+                    {ex.explanation && (
+                      <div className="mt-2 pt-2 border-t border-zinc-200 dark:border-zinc-800">
+                        <span className="text-zinc-500 font-bold uppercase text-[10px]">Explanation:</span>
+                        <p className="mt-1 text-zinc-600 dark:text-zinc-400 italic leading-snug">{ex.explanation}</p>
+                      </div>
+                    )}
+                  </pre>
                 </div>
               ))}
 
               <div className="mt-10 pt-6 border-t border-zinc-100 dark:border-zinc-900">
                 <div className="flex items-center gap-2 mb-4 text-zinc-900 dark:text-white">
-                    <ListChecks className="w-4 h-4 text-emerald-500" />
-                    <h3 className="text-sm font-bold m-0">Constraints</h3>
+                  <ListChecks className="w-4 h-4 text-emerald-500" />
+                  <h3 className="text-sm font-bold m-0">Constraints</h3>
                 </div>
                 <ul className="list-disc pl-5 space-y-2 text-xs font-medium text-zinc-500">
-                    {parsedData.constraints.map((c: string, i: number) => <li key={i}>{c}</li>)}
+                  {parsedData.constraints.map((c: string, i: number) => <li key={i}>{c}</li>)}
                 </ul>
               </div>
 
               <div className="mt-8 grid grid-cols-2 gap-4">
                 <div className="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-100 dark:border-zinc-800">
-                    <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-400 uppercase mb-1"><TimerIcon className="w-3 h-3" /> Time Complexity</div>
-                    <code className="text-xs font-bold text-emerald-500">{problem.expectedTime}</code>
+                  <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-400 uppercase mb-1"><TimerIcon className="w-3 h-3" /> Time Complexity</div>
+                  <code className="text-xs font-bold text-emerald-500">{problem.expectedTime}</code>
                 </div>
                 <div className="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-100 dark:border-zinc-800">
-                    <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-400 uppercase mb-1"><Layers className="w-3 h-3" /> Space Complexity</div>
-                    <code className="text-xs font-bold text-blue-500">{problem.expectedSpace}</code>
+                  <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-400 uppercase mb-1"><Layers className="w-3 h-3" /> Space Complexity</div>
+                  <code className="text-xs font-bold text-blue-500">{problem.expectedSpace}</code>
                 </div>
               </div>
             </div>
@@ -268,7 +258,7 @@ export default function CodeWorkspace({ problem }: any) {
               <div className="flex-1 pt-2">
                 {isLoadingCode ? (
                   <div className="h-full w-full flex items-center justify-center bg-white dark:bg-[#0a0a0a]">
-                    <Loader2 className="w-6 h-6 animate-spin text-zinc-400" />
+                    <Spinner size={24} className="text-zinc-400" />
                   </div>
                 ) : (
                   <Editor
@@ -308,12 +298,12 @@ export default function CodeWorkspace({ problem }: any) {
 
               <div className="flex-1 p-6 overflow-y-auto bg-white dark:bg-[#0a0a0a]">
                 {executionMeta?.error && (
-                    <div className="animate-in fade-in duration-200">
-                        <div className="flex items-center gap-2 text-rose-600 dark:text-rose-500 mb-4 font-bold text-sm"><AlertCircle className="w-5 h-5" /> {executionMeta.error}</div>
-                        <pre className="bg-rose-50 dark:bg-rose-500/5 border border-rose-200 dark:border-rose-500/20 p-4 rounded-xl text-xs font-mono text-rose-700 dark:text-rose-400 overflow-x-auto">
-                            {executionMeta.compile_output || executionMeta.stderr || "An unknown error occurred."}
-                        </pre>
-                    </div>
+                  <div className="animate-in fade-in duration-200">
+                    <div className="flex items-center gap-2 text-rose-600 dark:text-rose-500 mb-4 font-bold text-sm"><AlertCircle className="w-5 h-5" /> {executionMeta.error}</div>
+                    <pre className="bg-rose-50 dark:bg-rose-500/5 border border-rose-200 dark:border-rose-500/20 p-4 rounded-xl text-xs font-mono text-rose-700 dark:text-rose-400 overflow-x-auto">
+                      {executionMeta.compile_output || executionMeta.stderr || "An unknown error occurred."}
+                    </pre>
+                  </div>
                 )}
 
                 {results ? (
@@ -340,28 +330,28 @@ export default function CodeWorkspace({ problem }: any) {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-4">
-                            <p className="text-[10px] uppercase tracking-widest font-bold text-zinc-500">Input</p>
-                            <pre className="bg-zinc-50 dark:bg-zinc-900/50 p-4 rounded-xl text-xs font-mono border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-300 overflow-x-auto">
-                                {Object.entries(testCases[activeTestCase].metadata || {}).map(([key, value]) => (
-                                    <div key={key} className="flex gap-2">
-                                        <span className="text-emerald-600 dark:text-emerald-500/80">{key} =</span>
-                                        <span>{Array.isArray(value) ? `[${value.join(", ")}]` : String(value)}</span>
-                                    </div>
-                                ))}
-                                {!testCases[activeTestCase].metadata && <div>No metadata</div>}
-                            </pre>
-                            <p className="text-[10px] uppercase tracking-widest font-bold text-zinc-500">Actual Output</p>
-                            <pre className={`p-4 rounded-xl text-xs font-mono border overflow-x-auto ${results[activeTestCase].passed ? 'bg-emerald-50 dark:bg-emerald-500/5 border-emerald-200 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-400' : 'bg-rose-50 dark:bg-rose-500/5 border-rose-200 dark:border-rose-500/20 text-rose-700 dark:text-rose-400'}`}>
-                                {results[activeTestCase].actual || "No Output"}
-                            </pre>
-                        </div>
-                        <div className="space-y-4">
-                            <p className="text-[10px] uppercase tracking-widest font-bold text-zinc-500">Expected Output</p>
-                            <pre className="bg-zinc-50 dark:bg-zinc-900/50 p-4 rounded-xl text-xs font-mono border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-300 overflow-x-auto">
-                              {results[activeTestCase].expected}
-                            </pre>
-                        </div>
+                      <div className="space-y-4">
+                        <p className="text-[10px] uppercase tracking-widest font-bold text-zinc-500">Input</p>
+                        <pre className="bg-zinc-50 dark:bg-zinc-900/50 p-4 rounded-xl text-xs font-mono border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-300 overflow-x-auto">
+                          {Object.entries(testCases[activeTestCase].metadata || {}).map(([key, value]) => (
+                            <div key={key} className="flex gap-2">
+                              <span className="text-emerald-600 dark:text-emerald-500/80">{key} =</span>
+                              <span>{Array.isArray(value) ? `[${value.join(", ")}]` : String(value)}</span>
+                            </div>
+                          ))}
+                          {!testCases[activeTestCase].metadata && <div>No metadata</div>}
+                        </pre>
+                        <p className="text-[10px] uppercase tracking-widest font-bold text-zinc-500">Actual Output</p>
+                        <pre className={`p-4 rounded-xl text-xs font-mono border overflow-x-auto ${results[activeTestCase].passed ? 'bg-emerald-50 dark:bg-emerald-500/5 border-emerald-200 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-400' : 'bg-rose-50 dark:bg-rose-500/5 border-rose-200 dark:border-rose-500/20 text-rose-700 dark:text-rose-400'}`}>
+                          {results[activeTestCase].actual || "No Output"}
+                        </pre>
+                      </div>
+                      <div className="space-y-4">
+                        <p className="text-[10px] uppercase tracking-widest font-bold text-zinc-500">Expected Output</p>
+                        <pre className="bg-zinc-50 dark:bg-zinc-900/50 p-4 rounded-xl text-xs font-mono border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-300 overflow-x-auto">
+                          {results[activeTestCase].expected}
+                        </pre>
+                      </div>
                     </div>
                   </div>
                 ) : !isRunning && (
@@ -370,12 +360,12 @@ export default function CodeWorkspace({ problem }: any) {
                     Run tests to see results
                   </div>
                 )}
-                
+
                 {isRunning && (
-                    <div className="h-full flex flex-col items-center justify-center text-emerald-500 gap-3">
-                        <div className="w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-                        <p className="text-xs font-bold uppercase tracking-widest animate-pulse">Running Tests...</p>
-                    </div>
+                  <div className="h-full flex flex-col items-center justify-center text-emerald-500 gap-3">
+                    <div className="w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+                    <p className="text-xs font-bold uppercase tracking-widest animate-pulse">Running Tests...</p>
+                  </div>
                 )}
               </div>
             </Panel>

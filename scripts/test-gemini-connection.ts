@@ -21,7 +21,8 @@ async function testConnection() {
         "gemini-1.5-pro",
         "gemini-pro",
         "gemini-1.5-flash-001",
-        "gemini-1.5-pro-001"
+        "gemini-1.5-pro-001",
+        "gemini-3-flash-preview"
     ];
 
     console.log("----------------------------------------");

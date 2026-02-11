@@ -1,6 +1,6 @@
 import React from 'react';
 import { cn } from "@/lib/utils";
-import Image from "next/image";
+
 
 interface LoaderProps {
     size?: "sm" | "md" | "lg" | "xl";
@@ -11,26 +11,17 @@ interface LoaderProps {
 
 export function Loader({ size = "lg", className, text, description }: LoaderProps) {
     const sizeClasses = {
-        sm: 40,
-        md: 80,
-        lg: 120,
-        xl: 200
+        sm: 24,
+        md: 40,
+        lg: 60,
+        xl: 80
     };
 
     const dimension = sizeClasses[size];
 
     return (
         <div className={cn("flex flex-col items-center justify-center min-h-[200px] w-full gap-4", className)}>
-            <div className="relative flex items-center justify-center animate-pulse">
-                <Image
-                    src="/loader.png"
-                    alt="Loading..."
-                    width={dimension}
-                    height={dimension}
-                    className="object-contain"
-                    priority
-                />
-            </div>
+            <Spinner size={dimension} />
 
             {(text || description) && (
                 <div className="text-center space-y-1 animate-pulse">
@@ -51,16 +42,11 @@ export function FullScreenLoader({ text, description }: { text?: string, descrip
     );
 }
 
-export function Spinner({ className, size = 24 }: { className?: string, size?: number }) {
+export function Spinner({ className, size = 20 }: { className?: string, size?: number }) {
     return (
-        <div className={cn("relative animate-pulse", className)} style={{ width: size, height: size }}>
-            <Image
-                src="/loader.png"
-                alt="Loading"
-                fill
-                className="object-contain"
-                sizes={`${size}px`}
-            />
-        </div>
+        <div
+            className={cn("animate-spin rounded-full border-t-2 border-b-2 border-current text-blue-600", className)}
+            style={{ width: size, height: size }}
+        />
     );
 }
