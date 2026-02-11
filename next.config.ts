@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
@@ -38,3 +39,30 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+=======
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '15mb',
+    },
+  },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'api.dicebear.com',
+        pathname: '**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'th.bing.com',
+        pathname: '**',
+      },
+    ],
+  },
+};
+
+export default nextConfig;
+>>>>>>> 88523f22e704b7df36f7eb974c0dc7462a97faf5

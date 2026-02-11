@@ -3,7 +3,7 @@ export const LANGUAGES = {
         label: "C++",
         judge0_id: 53,
         monaco: "cpp",
-     
+
 
     },
 
@@ -18,7 +18,7 @@ export const LANGUAGES = {
         label: "Java",
         judge0_id: 62,
         monaco: "java",
-      
+
 
     },
 
@@ -27,8 +27,8 @@ export const LANGUAGES = {
         judge0_id: 71,
         monaco: "python",
     }
-      
+
 
 }
 
-export type LangaugeKey= keyof typeof LANGUAGES;
+export type LanguageKey = keyof typeof LANGUAGES;

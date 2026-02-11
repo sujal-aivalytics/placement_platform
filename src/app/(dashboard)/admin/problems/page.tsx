@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Save, Code, FileText, Settings, CheckCircle2, Loader2, X } from "lucide-react";
+import { Save, Code, FileText, Settings, CheckCircle2, X } from "lucide-react";
+import { Spinner } from "@/components/ui/loader";
 
 export default function CreateProblemPage() {
   const router = useRouter();
@@ -29,7 +30,7 @@ export default function CreateProblemPage() {
   const submit = async () => {
     try {
       setLoading(true);
-      
+
       // Parse JSON fields before sending
       const payload = {
         ...form,
@@ -64,7 +65,7 @@ export default function CreateProblemPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 pb-20 relative">
-      
+
       {/* SUCCESS POPUP OVERLAY */}
       {showSuccess && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
@@ -76,9 +77,9 @@ export default function CreateProblemPage() {
               <h3 className="text-2xl font-bold text-slate-900">Problem Saved!</h3>
               <p className="text-slate-500 mt-2 font-medium">Your problem has been successfully added to the database.</p>
             </div>
-            
+
             {/* MANUAL OK BUTTON */}
-            <button 
+            <button
               onClick={handleModalClose}
               className="mt-6 w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-200 transition-all active:scale-95"
             >
@@ -91,13 +92,13 @@ export default function CreateProblemPage() {
       {/* STICKY HEADER */}
       <div className="sticky top-0 z-10 flex items-center justify-between border-b bg-white/80 backdrop-blur-md px-8 py-4 shadow-sm">
         <div className="flex items-center gap-4">
-            <button onClick={() => router.back()} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
-                <X size={20} className="text-slate-500" />
-            </button>
-            <div>
-                <h1 className="text-xl font-bold text-slate-900 leading-none">Create New Problem</h1>
-                <p className="text-xs text-slate-500 mt-1">Design and publish a new challenge to AiValytics</p>
-            </div>
+          <button onClick={() => router.back()} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
+            <X size={20} className="text-slate-500" />
+          </button>
+          <div>
+            <h1 className="text-xl font-bold text-slate-900 leading-none">Create New Problem</h1>
+            <p className="text-xs text-slate-500 mt-1">Design and publish a new challenge to AiValytics</p>
+          </div>
         </div>
         <div className="flex gap-3">
           <button
@@ -106,34 +107,34 @@ export default function CreateProblemPage() {
             className="flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-200 hover:bg-indigo-700 active:scale-95 disabled:opacity-50 transition-all"
           >
             {loading ? (
-                <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Processing...</span>
-                </>
+              <>
+                <Spinner size={16} className="text-white" />
+                <span>Processing...</span>
+              </>
             ) : (
-                <>
-                    <Save size={18} />
-                    <span>Save Problem</span>
-                </>
+              <>
+                <Save size={18} />
+                <span>Save Problem</span>
+              </>
             )}
           </button>
         </div>
       </div>
 
       <div className={`mx-auto mt-8 max-w-5xl space-y-8 px-8 transition-all duration-500 ${showSuccess ? 'blur-sm scale-[0.98] pointer-events-none opacity-50' : ''}`}>
-        
+
         {/* SECTION 1: GENERAL INFO */}
         <section className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
           <div className="mb-8 flex items-center gap-3 border-b border-slate-100 pb-5">
             <div className="p-2 bg-indigo-50 rounded-lg">
-                <FileText className="text-indigo-600" size={22} />
+              <FileText className="text-indigo-600" size={22} />
             </div>
             <h2 className="text-xl font-bold text-slate-800">General Information</h2>
           </div>
-          
+
           <div className="space-y-6">
             <Input name="title" label="Problem Title" placeholder="e.g. Palindrome Number" onChange={handleChange} />
-            
+
             <div className="grid grid-cols-2 gap-8">
               <Select name="difficulty" label="Difficulty Level" onChange={handleChange} options={["Easy", "Medium", "Hard"]} />
               <Select name="type" label="Problem Category" onChange={handleChange} options={["DSA", "SQL", "MCQ"]} />
@@ -148,7 +149,7 @@ export default function CreateProblemPage() {
         <section className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
           <div className="mb-8 flex items-center gap-3 border-b border-slate-100 pb-5">
             <div className="p-2 bg-amber-50 rounded-lg">
-                <Settings className="text-amber-600" size={22} />
+              <Settings className="text-amber-600" size={22} />
             </div>
             <h2 className="text-xl font-bold text-slate-800">Complexity Benchmarks</h2>
           </div>
@@ -162,7 +163,7 @@ export default function CreateProblemPage() {
         <section className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
           <div className="mb-8 flex items-center gap-3 border-b border-slate-100 pb-5">
             <div className="p-2 bg-emerald-50 rounded-lg">
-                <Code className="text-emerald-600" size={22} />
+              <Code className="text-emerald-600" size={22} />
             </div>
             <h2 className="text-xl font-bold text-slate-800">Technical Configuration (JSON)</h2>
           </div>
@@ -199,11 +200,10 @@ function Textarea({ label, isCode, ...props }: any) {
       <textarea
         {...props}
         rows={isCode ? 10 : 5}
-        className={`rounded-xl border border-slate-200 p-4 text-sm transition-all outline-none focus:ring-4 ${
-          isCode 
-            ? "font-mono bg-slate-900 text-indigo-300 focus:border-indigo-400 focus:ring-indigo-500/20" 
+        className={`rounded-xl border border-slate-200 p-4 text-sm transition-all outline-none focus:ring-4 ${isCode
+            ? "font-mono bg-slate-900 text-indigo-300 focus:border-indigo-400 focus:ring-indigo-500/20"
             : "bg-slate-50/50 focus:border-indigo-500 focus:bg-white focus:ring-indigo-500/10"
-        }`}
+          }`}
       />
     </div>
   );
@@ -213,8 +213,8 @@ function Select({ label, options, ...props }: any) {
   return (
     <div className="flex flex-col gap-2">
       <label className="text-sm font-bold text-slate-700 ml-1">{label}</label>
-      <select 
-        {...props} 
+      <select
+        {...props}
         className="rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-sm outline-none transition-all cursor-pointer focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10"
       >
         {options.map((o: string) => (
